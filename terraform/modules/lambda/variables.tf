@@ -6,17 +6,9 @@ variable product {}
 variable sub_product {}
 variable cost_code {}
 variable orchestration {}
-
 variable distribution_bucket {}
-variable cusoon_results_table_arn {}
-variable cusoon_email_sends_arn {}
-variable cusoon_supplier_results_queue_arn {}
-variable ses_domain{}
-variable send_emails{}
-variable to_email_override{}
-variable frontend_url{}
-variable enabled_error_codes{}
-variable cusoon_results_datalake_bucket_arn {}
+variable "attendees_table_arn" {}
+variable "attendees_table_name" {}
 
 variable "cors_configuration" {
   type = any

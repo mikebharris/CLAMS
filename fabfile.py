@@ -33,6 +33,10 @@ def terraform(context, project_name=vars.project_name, application_name=vars.app
 
     terraform_init(bucket, key, region)
 
+    if mode == 'apply':
+        with do_in_directory('functions/attendees-api'):
+            local('make target')
+
     command = 'terraform {mode} -input=false ' \
               '-var "account_number={account_number}" -var "environment={environment}" --refresh=true' \
         .format(mode=mode,

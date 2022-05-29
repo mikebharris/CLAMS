@@ -8,10 +8,10 @@ resource "aws_dynamodb_table_item" "attendees_golden_data" {
       "S" : "5F7BCD"
     },
     "Name" : {
-      "S" : "Maximillian Schramp"
+      "S" : "Maximillian Spillage"
     },
     "Email" : {
-      "S" : "max.schramp@somedomain.com"
+      "S" : "max.spillage@somedomain.com"
     },
     "Phone" : {
       "S" : "+1-800-BAMSROCKS"
@@ -24,19 +24,28 @@ resource "aws_dynamodb_table_item" "attendees_golden_data" {
     },
     "Financials" : {
       "M" : {
-        "To Pay" : {
-          "N" : "50"
+        "ToPay" : {
+          "N" : "75"
         },
         "Paid" : {
           "N" : "50"
         },
-        "Paid date" : {
+        "PaidDate" : {
           "S" : "28/05/2022"
+        },
+        "Due" : {
+          "N" : "25"
         }
       }
     },
     "StayingLate" : {
       "S" : "Yes"
+    },
+    "Arrival": {
+      "S": "Wednesday"
+    }
+    "Nights": {
+      "N": "5"
     }
   })
 }

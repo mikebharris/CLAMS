@@ -1,6 +1,6 @@
-resource "aws_apigatewayv2_api" "cusoon_results_api_lambda_http_gateway" {
-  name          = "${var.product}-${var.environment}-results-api-http-gateway"
-  description   = "HTTP API Gateway for CU Soon Results API Lambda."
+resource "aws_apigatewayv2_api" "attendees_api_lambda_http_gateway" {
+  name          = "${var.product}-${var.environment}-attendees-api-http-gateway"
+  description   = "HTTP API Gateway for MBH Test eHAMS API Lambda."
   protocol_type = "HTTP"
 
   dynamic "cors_configuration" {
@@ -17,13 +17,13 @@ resource "aws_apigatewayv2_api" "cusoon_results_api_lambda_http_gateway" {
   }
 }
 
-resource "aws_apigatewayv2_stage" "cusoon_results_api_lambda_http_gateway_stage" {
-  api_id      = aws_apigatewayv2_api.cusoon_results_api_lambda_http_gateway.id
-  name        = "submissions"
+resource "aws_apigatewayv2_stage" "attendees_api_lambda_http_gateway_stage" {
+  api_id      = aws_apigatewayv2_api.attendees_api_lambda_http_gateway.id
+  name        = "attendees"
   auto_deploy = true
 
   access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.cusoon_results_api_http_gateway_log_group.arn
+    destination_arn = aws_cloudwatch_log_group.attendees_api_http_gateway_log_group.arn
 
     format          = jsonencode({
       requestId               = "$context.requestId"
@@ -40,36 +40,36 @@ resource "aws_apigatewayv2_stage" "cusoon_results_api_lambda_http_gateway_stage"
   }
 }
 
-resource "aws_apigatewayv2_integration" "cusoon_results_api_lambda_http_gateway_integration_get_method" {
-  api_id           = aws_apigatewayv2_api.cusoon_results_api_lambda_http_gateway.id
+resource "aws_apigatewayv2_integration" "attendees_api_lambda_http_gateway_integration_get_method" {
+  api_id           = aws_apigatewayv2_api.attendees_api_lambda_http_gateway.id
   integration_type = "AWS_PROXY"
   integration_method = "POST"
-  integration_uri = aws_lambda_function.cusoon_results_api_lambda_function.invoke_arn
+  integration_uri = aws_lambda_function.attendees_api_lambda_function.invoke_arn
 }
 
-resource "aws_apigatewayv2_route" "cusoon_results_api_lambda_http_gateway_integration_get_method_route" {
-  api_id    = aws_apigatewayv2_api.cusoon_results_api_lambda_http_gateway.id
-  route_key = "GET /{id}"
-  target = "integrations/${aws_apigatewayv2_integration.cusoon_results_api_lambda_http_gateway_integration_get_method.id}"
+resource "aws_apigatewayv2_route" "attendees_api_lambda_http_gateway_integration_get_method_route" {
+  api_id    = aws_apigatewayv2_api.attendees_api_lambda_http_gateway.id
+  route_key = "GET /{code}"
+  target = "integrations/${aws_apigatewayv2_integration.attendees_api_lambda_http_gateway_integration_get_method.id}"
 }
 
-resource "aws_cloudwatch_log_group" "cusoon_results_api_http_gateway_log_group" {
-  name = "/aws/api_gw/${aws_apigatewayv2_api.cusoon_results_api_lambda_http_gateway.name}"
-  retention_in_days = 14
+resource "aws_cloudwatch_log_group" "attendees_api_http_gateway_log_group" {
+  name = "/aws/api_gw/${aws_apigatewayv2_api.attendees_api_lambda_http_gateway.name}"
+  retention_in_days = 1
 }
 
-resource "aws_lambda_permission" "cusoon_results_api_http_gateway_lambda_permission" {
+resource "aws_lambda_permission" "attendees_api_http_gateway_lambda_permission" {
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.cusoon_results_api_lambda_function.function_name
+  function_name = aws_lambda_function.attendees_api_lambda_function.function_name
   principal     = "apigateway.amazonaws.com"
   statement_id = "AllowExecutionFromAPIGateway"
 
-  source_arn = "${aws_apigatewayv2_api.cusoon_results_api_lambda_http_gateway.execution_arn}/*/*"
+  source_arn = "${aws_apigatewayv2_api.attendees_api_lambda_http_gateway.execution_arn}/*/*"
 }
 
-resource "aws_ssm_parameter" "cusoon_results_api_endpoint" {
-  name  = "/${var.product}/${var.environment}/results-api/endpoint"
+resource "aws_ssm_parameter" "attendees_api_endpoint" {
+  name  = "/${var.product}/${var.environment}/attendees-api/endpoint"
   type  = "String"
-  value = aws_apigatewayv2_api.cusoon_results_api_lambda_http_gateway.api_endpoint
+  value = aws_apigatewayv2_api.attendees_api_lambda_http_gateway.api_endpoint
   overwrite = true
 }
