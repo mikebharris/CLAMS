@@ -63,7 +63,7 @@ data "aws_s3_bucket" "attendees_api_lambda_function_distribution_bucket" {
 
 resource "aws_s3_bucket_object" "attendees_api_lambda_function_distribution_bucket_object" {
   bucket = "${var.environment}-${var.distribution_bucket}"
-  key    = "${var.product}-results-api/${var.product}-attendees-api.zip"
+  key    = "${var.product}-attendees-api/${var.product}-attendees-api.zip"
   source = data.archive_file.attendees_api_lambda_function_distribution.output_path
   etag   = filemd5(data.archive_file.attendees_api_lambda_function_distribution.output_path)
 }

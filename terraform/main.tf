@@ -38,16 +38,3 @@ module "lambda" {
   input_queue_arn = module.sqs.attendee_input_queue_arn
   input_queue_name = module.sqs.attendee_input_queue_name
 }
-
-#
-#module "s3" {
-#  source = "./modules/s3"
-#  environment = var.environment
-#  region = var.region
-#  account_number = var.account_number
-#  contact = var.contact
-#  product = var.product
-#  sub_product = var.sub_product
-#  cost_code = var.cost_code
-#  orchestration = var.orchestration
-#}
