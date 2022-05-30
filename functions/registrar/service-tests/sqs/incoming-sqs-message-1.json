@@ -1,0 +1,17 @@
+{
+  "Code": "123456",
+  "Arrival": "Wednesday",
+  "Diet": "I eat BASIC code for lunch",
+  "Email": "frank.o@gfa.de",
+  "Financials": {
+    "Due": 0,
+    "Paid": 75,
+    "PaidDate": "29/05/2022",
+    "ToPay": 75
+  },
+  "Kids": 1,
+  "Name": "Frank Ostrowski",
+  "Nights": 4,
+  "Phone": "123456789",
+  "StayingLate": "No"
+}

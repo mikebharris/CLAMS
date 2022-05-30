@@ -9,6 +9,8 @@ variable orchestration {}
 variable distribution_bucket {}
 variable "attendees_table_arn" {}
 variable "attendees_table_name" {}
+variable "input_queue_arn" {}
+variable "input_queue_name" {}
 
 variable "cors_configuration" {
   type = any

@@ -17,6 +17,9 @@ def terraform(context, project_name=vars.project_name, application_name=vars.app
         print("I cannot work with empty values for --project_name and --application_name")
         exit(-1)
 
+    if mode == 'apply':
+        build_lambdas()
+
     account_number = '215048116110'
 
     bucket = 'elsevier-tio-aws-rap-ssi-{environment}-{account_number}' \
@@ -28,14 +31,7 @@ def terraform(context, project_name=vars.project_name, application_name=vars.app
                 application_name=application_name)
 
     print("Remote state is {bucket}/{key}".format(bucket=bucket, key=key))
-
-    region = 'us-east-1'
-
-    terraform_init(bucket, key, region)
-
-    if mode == 'apply':
-        with do_in_directory('functions/attendees-api'):
-            local('make target')
+    terraform_init(bucket, key, 'us-east-1')
 
     command = 'terraform {mode} -input=false ' \
               '-var "account_number={account_number}" -var "environment={environment}" --refresh=true' \
@@ -45,6 +41,14 @@ def terraform(context, project_name=vars.project_name, application_name=vars.app
 
     with do_in_directory('terraform'):
         local(command)
+
+
+def build_lambdas():
+    for f in ['attendees-api', 'registrar']:
+        lambda_location = 'functions/{function}'.format(function=f)
+        print("Building lambda in {l}....".format(l=lambda_location))
+        with do_in_directory(lambda_location):
+            local('make target')
 
 
 def terraform_init(bucket, key, region):

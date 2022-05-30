@@ -35,6 +35,8 @@ module "lambda" {
   distribution_bucket = var.distribution_bucket
   attendees_table_arn = module.dynamo.attendees_table_arn
   attendees_table_name = module.dynamo.attendees_table_name
+  input_queue_arn = module.sqs.attendee_input_queue_arn
+  input_queue_name = module.sqs.attendee_input_queue_name
 }
 
 #
