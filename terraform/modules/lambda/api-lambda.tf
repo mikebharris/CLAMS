@@ -46,7 +46,7 @@ resource "aws_iam_role_policy_attachment" "attendees_api_policy_attachment_execu
 }
 
 resource "aws_iam_policy" "attendees_api_iam_policy" {
-  name   = "${var.environment}-ope-test-mbh-ehams-attendees-api-iam-policy"
+  name   = "${var.environment}-${var.product}-attendees-api-iam-policy"
   path   = "/"
   policy = data.aws_iam_policy_document.attendees_api_iam_policy_document.json
 }

@@ -1,5 +1,5 @@
 resource "aws_sqs_queue" "attendee_input_queue" {
-  name = "${var.product}-attendee-input-queue"
+  name = "${var.product}-${var.input_queue_name}"
 
   redrive_policy = jsonencode({
     "deadLetterTargetArn" = aws_sqs_queue.attendee_input_dlq.arn,
@@ -19,7 +19,7 @@ resource "aws_sqs_queue" "attendee_input_queue" {
 }
 
 resource "aws_sqs_queue" "attendee_input_dlq" {
-  name                      = "${var.product}-attendee-input-queue-DLQ"
+  name                      = "${var.product}-${var.input_queue_name}-DLQ"
   message_retention_seconds = var.dlq_retention_period
 
   tags = {

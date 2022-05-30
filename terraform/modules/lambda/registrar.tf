@@ -1,5 +1,5 @@
 resource "aws_iam_role" "registrar_iam_role" {
-  name                  = "${var.product}-${var.environment}-results-processor-iam-role"
+  name                  = "${var.product}-${var.environment}-registrar-iam-role"
   force_detach_policies = true
   assume_role_policy    = jsonencode({
     Version   = "2012-10-17"

@@ -6,6 +6,7 @@ variable product {}
 variable sub_product {}
 variable cost_code {}
 variable orchestration {}
+variable input_queue_name {}
 
 variable "receive_count" {
   description = "The number of times that a message can be retrieved before being moved to the dead-letter queue"

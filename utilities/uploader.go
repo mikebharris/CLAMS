@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -27,8 +28,13 @@ type Message struct {
 	Kids        uint
 }
 
+var csvFile = flag.String("csv", "", "input csv file name")
+var sqsQueue = flag.String("sqs", "", "output sqs queue")
+
 func main() {
-	f, err := os.Open(os.Args[1])
+	flag.Parse()
+
+	f, err := os.Open(*csvFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,6 +46,7 @@ func main() {
 	}
 
 	if len(records) == 0 {
+		log.Println("no records to upload")
 		return
 	}
 
@@ -65,9 +72,9 @@ func main() {
 		}
 
 		if err := sqs.queueMessage(message); err != nil {
-			fmt.Printf("unable to queue message %v: %v", message, err)
+			fmt.Println("unable to queue message ", message, " : ", err)
 		} else {
-			fmt.Printf("successfully queued message %v", message)
+			fmt.Println("successfully queued message #", row, " : ", message)
 		}
 	}
 }
@@ -96,7 +103,7 @@ func (s *SqsClient) getQueueUrl() *string {
 	output, err := s.sqsHandle.GetQueueUrl(
 		context.Background(),
 		&sqs.GetQueueUrlInput{
-			QueueName: aws.String("ope-mbh-test-ehams-attendee-input-queue"),
+			QueueName: aws.String(*sqsQueue),
 		},
 	)
 	if err != nil {

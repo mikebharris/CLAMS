@@ -4,38 +4,42 @@ import shutil
 from os import path
 
 from invoke import task, run as local
-import vars
 
 
 @task
-def terraform(context, project_name=vars.project_name, application_name=vars.application_name, environment='nonprod', mode='plan'):
+def terraform(context, account_number="", contact="", cost_code="", distribution_bucket="",
+              attendees_table="attendees-datastore", input_queue="attendee-input-queue", project_name="ehams",
+              region="us-east-1", environment="nonprod", mode="plan"):
     if mode not in ['plan', 'apply', 'destroy']:
         print("No action to take.  Try passing --mode plan|apply|destroy")
-        exit(-1)
-
-    if project_name == '' or application_name == '':
-        print("I cannot work with empty values for --project_name and --application_name")
         exit(-1)
 
     if mode == 'apply':
         build_lambdas()
 
-    account_number = '215048116110'
-
     bucket = 'elsevier-tio-aws-rap-ssi-{environment}-{account_number}' \
         .format(environment='nonprod', account_number=account_number)
 
-    key = 'tfstate/{environment}-{project_name}-{application_name}.json' \
+    key = 'tfstate/{environment}-{project_name}.json' \
         .format(environment=environment,
-                project_name=project_name,
-                application_name=application_name)
+                project_name=project_name)
 
     print("Remote state is {bucket}/{key}".format(bucket=bucket, key=key))
     terraform_init(bucket, key, 'us-east-1')
 
     command = 'terraform {mode} -input=false ' \
+              '-var "product={project_name}" -var "region={region}" -var "cost_code={cost_code}" ' \
+              '-var "contact={contact}" -var "distribution_bucket={distribution_bucket}" ' \
+              '-var "attendees_table_name={attendees_table_name}" -var "input_queue_name={input_queue}" ' \
               '-var "account_number={account_number}" -var "environment={environment}" --refresh=true' \
         .format(mode=mode,
+                project_name=project_name,
+                region=region,
+                cost_code=cost_code,
+                contact=contact,
+                distribution_bucket=distribution_bucket,
+                attendees_table_name=attendees_table,
+                input_queue=input_queue,
                 account_number=account_number,
                 environment=environment)
 
