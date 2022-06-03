@@ -3,12 +3,8 @@ variable region {}
 variable account_number {}
 variable contact {}
 variable product {}
-variable sub_product {
-  default = ""
-}
-variable cost_code {}
 variable orchestration {
-  default = "https://github.com/mikebharris/ehams"
+  default = "https://github.com/mikebharris/clams"
 }
 variable distribution_bucket {}
 variable input_queue_name {}

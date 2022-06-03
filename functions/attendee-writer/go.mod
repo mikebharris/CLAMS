@@ -1,4 +1,4 @@
-module registrar
+module attendee-writer
 
 go 1.17
 

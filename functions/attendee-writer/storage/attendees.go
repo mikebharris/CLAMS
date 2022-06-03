@@ -14,24 +14,24 @@ type attendeesDb interface {
 }
 
 type Attendee struct {
-	Code        string
-	Name        string
-	Email       string
-	Phone       string
-	Kids        uint
-	Diet        string
-	Financials  Financials
-	Arrival     string
-	Nights      uint
-	StayingLate string
-	CreatedTime time.Time
+	AuthCode       string
+	Name           string
+	Email          string
+	Telephone      string
+	NumberOfKids   uint
+	Diet           string
+	Financials     Financials
+	ArrivalDay     string
+	NumberOfNights uint
+	StayingLate    string
+	CreatedTime    time.Time
 }
 
 type Financials struct {
-	ToPay    uint   `json:"ToPay"`
-	Paid     uint   `json:"Paid"`
-	Due      int    `json:"Due"`
-	PaidDate string `json:"PaidDate"`
+	AmountToPay uint   `json:"AmountToPay"`
+	AmountPaid  uint   `json:"AmountPaid"`
+	AmountDue   int    `json:"AmountDue"`
+	DatePaid    string `json:"DatePaid"`
 }
 
 type IAttendees interface {

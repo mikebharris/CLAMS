@@ -15,18 +15,12 @@ type Handler struct {
 }
 
 func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Fatalf("panic occurred: %v\n", err)
-		}
-	}()
-
-	code := request.PathParameters["code"]
-	if code == "" {
+	authCode := request.PathParameters["authCode"]
+	if authCode == "" {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusNotImplemented}, nil
 	}
 
-	attendee, err := h.attendees.FetchAttendee(ctx, code)
+	attendee, err := h.attendees.FetchAttendee(ctx, authCode)
 	if err != nil {
 		log.Println(err)
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, nil

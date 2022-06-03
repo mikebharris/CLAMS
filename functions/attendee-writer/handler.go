@@ -1,29 +1,29 @@
 package main
 
 import (
+	"attendee-writer/storage"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
-	"registrar/storage"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 )
 
-type IncomingRequestPayload struct {
-	Name        string
-	Email       string
-	Code        string
-	ToPay       uint
-	Paid        uint
-	PaidDate    string
-	Phone       string
-	Arrival     string
-	Diet        string
-	StayingLate string
-	Kids        uint
+type Message struct {
+	AuthCode     string
+	Name         string
+	Email        string
+	AmountToPay  uint
+	AmountPaid   uint
+	DatePaid     string
+	Telephone    string
+	ArrivalDay   string
+	StayingLate  string
+	NumberOfKids uint
+	Diet         string
 }
 
 type handler struct {
@@ -48,28 +48,28 @@ func (h *handler) handleRequest(ctx context.Context, sqsEvent events.SQSEvent) (
 }
 
 func (h *handler) handleMessage(ctx context.Context, message events.SQSMessage) error {
-	payload, err := h.unmarshalToIncomingRequest(message)
+	m, err := h.jsonToMessageObject(message)
 	if err != nil {
-		return fmt.Errorf("reading payload message %v: %v", message, err)
+		return fmt.Errorf("reading m message %v: %v", message, err)
 	}
 
 	attendee := storage.Attendee{
-		Code:  payload.Code,
-		Name:  payload.Name,
-		Email: payload.Email,
-		Phone: payload.Phone,
-		Kids:  payload.Kids,
-		Diet:  payload.Diet,
+		AuthCode:     m.AuthCode,
+		Name:         m.Name,
+		Email:        m.Email,
+		Telephone:    m.Telephone,
+		NumberOfKids: m.NumberOfKids,
+		Diet:         m.Diet,
 		Financials: storage.Financials{
-			ToPay:    payload.ToPay,
-			Paid:     payload.Paid,
-			Due:      int(payload.ToPay - payload.Paid),
-			PaidDate: payload.PaidDate,
+			AmountToPay: m.AmountToPay,
+			AmountPaid:  m.AmountPaid,
+			AmountDue:   int(m.AmountToPay - m.AmountPaid),
+			DatePaid:    m.DatePaid,
 		},
-		Arrival:     payload.Arrival,
-		Nights:      h.computeNights(payload.Arrival, payload.StayingLate),
-		StayingLate: payload.StayingLate,
-		CreatedTime: time.Now(),
+		ArrivalDay:     m.ArrivalDay,
+		NumberOfNights: h.computeNights(m.ArrivalDay, m.StayingLate),
+		StayingLate:    m.StayingLate,
+		CreatedTime:    time.Now(),
 	}
 
 	if err := h.storeAttendee(ctx, attendee); err != nil {
@@ -86,10 +86,10 @@ func (h *handler) storeAttendee(ctx context.Context, attendee storage.Attendee) 
 	return nil
 }
 
-func (h *handler) unmarshalToIncomingRequest(message events.SQSMessage) (*IncomingRequestPayload, error) {
-	r := IncomingRequestPayload{}
+func (h *handler) jsonToMessageObject(message events.SQSMessage) (*Message, error) {
+	r := Message{}
 	if err := json.Unmarshal([]byte(message.Body), &r); err != nil {
-		return nil, fmt.Errorf("unmarshalling payload body %s: %v", message.Body, err)
+		return nil, fmt.Errorf("unmarshalling message body %s: %v", message.Body, err)
 	}
 	return &r, nil
 }

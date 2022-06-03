@@ -15,8 +15,8 @@ func TestFeatures(t *testing.T) {
 			ctx.Before(steps.setUpDynamoClient)
 			ctx.After(steps.stopContainers)
 
-			ctx.Step(`^the Registrar is invoked with an attendee record from BAMS to be processed$`, steps.theRegistrarIsInvokedWithANewAttendeeRecord)
-			ctx.Step(`^the Registrar is invoked with an updated attendee record from BAMS to be processed$`, steps.theRegistrarIsInvokedWithAnUpdatedAttendeeRecord)
+			ctx.Step(`^the Attendee Writer is invoked with an attendee record from BAMS to be processed$`, steps.theAttendeeWriterIsInvokedWithANewAttendeeRecord)
+			ctx.Step(`^the Attendee Writer is invoked with an updated attendee record from BAMS to be processed$`, steps.theAttendeeWriterIsInvokedWithAnUpdatedAttendeeRecord)
 
 			ctx.Step(`^the attendee is added to the Attendees Datastore$`, steps.theAttendeeIsAddedToTheAttendeesDatastore)
 			ctx.Step(`^the attendee is updated in the Attendees Datastore$`, steps.theAttendeeIsUpdatedInTheAttendeesDatastore)

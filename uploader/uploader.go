@@ -15,17 +15,17 @@ import (
 )
 
 type Message struct {
-	Name        string
-	Email       string
-	Code        string
-	ToPay       uint
-	Paid        uint
-	PaidDate    string
-	Phone       string
-	Arrival     string
-	Diet        string
-	StayingLate string
-	Kids        uint
+	AuthCode     string
+	Name         string
+	Email        string
+	AmountToPay  uint
+	AmountPaid   uint
+	DatePaid     string
+	Telephone    string
+	ArrivalDay   string
+	StayingLate  string
+	NumberOfKids uint
+	Diet         string
 }
 
 var csvFile = flag.String("csv", "", "input csv file name")
@@ -52,29 +52,30 @@ func main() {
 
 	sqs, err := newSqsClient()
 
+	fmt.Println("Reading from", *csvFile, "and writing to", *sqsQueue)
 	for row, record := range records {
 		if row == 0 {
 			continue
 		}
 
 		message := Message{
-			Name:        record[0],
-			Email:       record[1],
-			Code:        record[2],
-			ToPay:       toUint(record[3]),
-			Paid:        toUint(record[4]),
-			PaidDate:    record[5],
-			Phone:       record[6],
-			Arrival:     record[7],
-			Diet:        record[8],
-			StayingLate: record[9],
-			Kids:        toUint(record[10]),
+			AuthCode:     record[0],
+			Name:         record[1],
+			Email:        record[2],
+			AmountToPay:  toUint(record[3]),
+			AmountPaid:   toUint(record[4]),
+			DatePaid:     record[5],
+			Telephone:    record[6],
+			ArrivalDay:   record[7],
+			StayingLate:  record[8],
+			NumberOfKids: toUint(record[9]),
+			Diet:         record[10],
 		}
 
 		if err := sqs.queueMessage(message); err != nil {
-			fmt.Println("unable to queue message ", message, " : ", err)
+			fmt.Println("Unable to queue message ", message, " : ", err)
 		} else {
-			fmt.Println("successfully queued message #", row, " : ", message)
+			fmt.Println("Queued message #", row, " : ", message)
 		}
 	}
 }

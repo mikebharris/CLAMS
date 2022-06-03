@@ -24,18 +24,18 @@ type steps struct {
 }
 
 type ApiResponse struct {
-	Code       string
-	Name       string
-	Email      string
-	Phone      string
-	Kids       uint
-	Diet       string
-	Nights     uint
-	Financials struct {
-		ToPay    int    `json:"ToPay"`
-		Paid     int    `json:"Paid"`
-		Due      int    `json:"Due"`
-		PaidDate string `json:"PaidDate"`
+	AuthCode       string
+	Name           string
+	Email          string
+	Telephone      string
+	NumberOfKids   uint
+	Diet           string
+	NumberOfNights uint
+	Financials     struct {
+		AmountToPay int    `json:"AmountToPay"`
+		AmountPaid  int    `json:"AmountPaid"`
+		AmountDue   int    `json:"AmountDue"`
+		DatePaid    string `json:"DatePaid"`
 	} `json:"Financials"`
 }
 
@@ -84,22 +84,22 @@ func (s *steps) stopContainers(ctx context.Context, sc *godog.Scenario, err erro
 
 func (s *steps) anAttendeeRecordExistsInTheAttendeesDatastore() error {
 	err := s.DynamoClient.addAttendee(Attendee{
-		Code:  "12345",
-		Name:  "Frank",
-		Email: "frank.o@gfa.de",
-		Phone: "123456789",
-		Kids:  4,
-		Diet:  "I eat BASIC code for lunch",
+		AuthCode:     "12345",
+		Name:         "Frank",
+		Email:        "frank.o@gfa.de",
+		Telephone:    "123456789",
+		NumberOfKids: 4,
+		Diet:         "I eat BASIC code for lunch",
 		Financials: Financials{
-			ToPay:    1024,
-			Paid:     512,
-			PaidDate: "10/05/2022",
-			Due:      512,
+			AmountToPay: 1024,
+			AmountPaid:  512,
+			DatePaid:    "10/05/2022",
+			AmountDue:   512,
 		},
-		Arrival:     "Wednesday",
-		Nights:      5,
-		StayingLate: "Yes",
-		CreatedTime: time.Now(),
+		ArrivalDay:     "Wednesday",
+		NumberOfNights: 5,
+		StayingLate:    "Yes",
+		CreatedTime:    time.Now(),
 	})
 
 	return err
@@ -114,7 +114,7 @@ func (s *steps) theFrontendFetchesTheRecordFromTheAPI() error {
 	url := fmt.Sprintf("http://localhost:%d/2015-03-31/functions/myfunction/invocations", localLambdaInvocationPort)
 
 	params := make(map[string]string)
-	params["code"] = "12345"
+	params["authCode"] = "12345"
 	request := events.APIGatewayProxyRequest{PathParameters: params}
 	requestJsonBytes, err := json.Marshal(request)
 	if err != nil {
@@ -154,17 +154,17 @@ func (s *steps) theRecordIsReturned() error {
 		return fmt.Errorf("unmarshalling result: %s", err)
 	}
 
-	assert.Equal(s.t, "12345", apiResponse.Code)
+	assert.Equal(s.t, "12345", apiResponse.AuthCode)
 	assert.Equal(s.t, "Frank", apiResponse.Name)
 	assert.Equal(s.t, "frank.o@gfa.de", apiResponse.Email)
-	assert.Equal(s.t, "123456789", apiResponse.Phone)
-	assert.Equal(s.t, uint(4), apiResponse.Kids)
+	assert.Equal(s.t, "123456789", apiResponse.Telephone)
+	assert.Equal(s.t, uint(4), apiResponse.NumberOfKids)
 	assert.Equal(s.t, "I eat BASIC code for lunch", apiResponse.Diet)
-	assert.Equal(s.t, uint(5), apiResponse.Nights)
-	assert.Equal(s.t, 1024, apiResponse.Financials.ToPay)
-	assert.Equal(s.t, 512, apiResponse.Financials.Paid)
-	assert.Equal(s.t, "10/05/2022", apiResponse.Financials.PaidDate)
-	assert.Equal(s.t, 512, apiResponse.Financials.Due)
+	assert.Equal(s.t, uint(5), apiResponse.NumberOfNights)
+	assert.Equal(s.t, 1024, apiResponse.Financials.AmountToPay)
+	assert.Equal(s.t, 512, apiResponse.Financials.AmountPaid)
+	assert.Equal(s.t, "10/05/2022", apiResponse.Financials.DatePaid)
+	assert.Equal(s.t, 512, apiResponse.Financials.AmountDue)
 
 	return nil
 }

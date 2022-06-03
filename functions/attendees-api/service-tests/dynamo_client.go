@@ -19,24 +19,24 @@ type DynamoClient struct {
 }
 
 type Attendee struct {
-	Code        string
-	Name        string
-	Email       string
-	Phone       string
-	Kids        uint
-	Diet        string
-	Financials  Financials
-	Arrival     string
-	Nights      uint
-	StayingLate string
-	CreatedTime time.Time
+	AuthCode       string
+	Name           string
+	Email          string
+	Telephone      string
+	NumberOfKids   uint
+	Diet           string
+	Financials     Financials
+	ArrivalDay     string
+	NumberOfNights uint
+	StayingLate    string
+	CreatedTime    time.Time
 }
 
 type Financials struct {
-	ToPay    uint   `json:"To Pay"`
-	Paid     uint   `json:"Paid"`
-	PaidDate string `json:"Paid date"`
-	Due      int    `json:"Due"`
+	AmountToPay uint   `json:"To Pay"`
+	AmountPaid  uint   `json:"AmountPaid"`
+	DatePaid    string `json:"DatePaid"`
+	AmountDue   int    `json:"AmountDue"`
 }
 
 func newDynamoClient(host string, port int) (DynamoClient, error) {
@@ -57,13 +57,13 @@ func (d DynamoClient) createAttendeesTable() error {
 	input := &dynamodb.CreateTableInput{
 		AttributeDefinitions: []types.AttributeDefinition{
 			{
-				AttributeName: aws.String("Code"),
+				AttributeName: aws.String("AuthCode"),
 				AttributeType: types.ScalarAttributeTypeS,
 			},
 		},
 		KeySchema: []types.KeySchemaElement{
 			{
-				AttributeName: aws.String("Code"),
+				AttributeName: aws.String("AuthCode"),
 				KeyType:       types.KeyTypeHash,
 			},
 		},

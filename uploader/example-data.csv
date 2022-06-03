@@ -1,0 +1,9 @@
+AuthCode,Name,Email,AmountToPay,AmountPaid,DatePaid,Telephone,ArrivalDay,StayingLate,NumberOfKids,Diet
+123456,Cyder Punk,anicedrop@riseup.net,035,000,04000000,01234 567 890,Fri,0,0,Milk allergy - but that's not a problem with vegan food :)
+612297,Rudy Jenkins,rudy@jenkins.co,050,000,00000000,07811671893,Fri,0,1,None
+BCDEF1,Ronald Chump,r.chump@whitehouse.gov,050,000,00000000,01234 567 890,Fri,0,1,
+CDEF12,Josefina Rodriguez,josefinar@hackitectura.es,035,000,01000000,01234 567 890,Fri,0,2,
+DEF123,Random Guy,somebody@somewhere.net,035,000,00000000,01234 567 890,Wed,0,0,
+EDCBAF,Zak Mindwarp,zak@mindwarp.io,050,050,01000000,01234 567 890,Wed,0,0,I eat anything
+EF1234,Undercover Agent,obviouscrusty@gmail.com,035,000,03000000,01234 567 890,Fri,0,0,
+FEDCBA,Zak Mindwarp,zak@mindwarp.io,050,050,01000000,01234 567 890,Wed,0,0,I eat anything

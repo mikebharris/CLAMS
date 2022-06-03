@@ -5,8 +5,6 @@ module "dynamo" {
   account_number = var.account_number
   contact        = var.contact
   product        = var.product
-  sub_product    = var.sub_product
-  cost_code      = var.cost_code
   orchestration  = var.orchestration
   attendees_table_name = var.attendees_table_name
 }
@@ -18,8 +16,6 @@ module "sqs" {
   account_number   = var.account_number
   contact          = var.contact
   product          = var.product
-  sub_product      = var.sub_product
-  cost_code        = var.cost_code
   orchestration    = var.orchestration
   input_queue_name = var.input_queue_name
 }
@@ -31,8 +27,6 @@ module "lambda" {
   account_number       = var.account_number
   contact              = var.contact
   product              = var.product
-  sub_product          = var.sub_product
-  cost_code            = var.cost_code
   orchestration        = var.orchestration
   distribution_bucket  = var.distribution_bucket
   attendees_table_arn  = module.dynamo.attendees_table_arn

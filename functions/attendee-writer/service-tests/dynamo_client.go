@@ -19,24 +19,24 @@ type DynamoClient struct {
 }
 
 type Attendee struct {
-	Code        string
-	Name        string
-	Email       string
-	Phone       string
-	Kids        uint
-	Diet        string
-	Financials  Financials
-	Arrival     string
-	Nights      uint
-	StayingLate string
-	CreatedTime time.Time
+	AuthCode       string
+	Name           string
+	Email          string
+	Telephone      string
+	NumberOfKids   uint
+	Diet           string
+	Financials     Financials
+	ArrivalDay     string
+	NumberOfNights uint
+	StayingLate    string
+	CreatedTime    time.Time
 }
 
 type Financials struct {
-	ToPay    uint   `json:"To Pay"`
-	Paid     uint   `json:"Paid"`
-	PaidDate string `json:"Paid date"`
-	Due      int    `json:"Due"`
+	AmountToPay uint   `json:"AmountToPay"`
+	AmountPaid  uint   `json:"AmountPaid"`
+	AmountDue   int    `json:"AmountDue"`
+	DatePaid    string `json:"DatePaid"`
 }
 
 func newDynamoClient(host string, port int) (DynamoClient, error) {
@@ -57,13 +57,13 @@ func (d DynamoClient) createAttendeesTable() error {
 	input := &dynamodb.CreateTableInput{
 		AttributeDefinitions: []types.AttributeDefinition{
 			{
-				AttributeName: aws.String("Code"),
+				AttributeName: aws.String("AuthCode"),
 				AttributeType: types.ScalarAttributeTypeS,
 			},
 		},
 		KeySchema: []types.KeySchemaElement{
 			{
-				AttributeName: aws.String("Code"),
+				AttributeName: aws.String("AuthCode"),
 				KeyType:       types.KeyTypeHash,
 			},
 		},
@@ -78,12 +78,12 @@ func (d DynamoClient) createAttendeesTable() error {
 	return err
 }
 
-func (d DynamoClient) getAttendeeByCode(code string) (*Attendee, error) {
+func (d DynamoClient) getAttendeeByCode(authCode string) (*Attendee, error) {
 	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(attendeesTableName),
-		KeyConditionExpression: aws.String("Code = :code"),
+		KeyConditionExpression: aws.String("AuthCode = :authCode"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":code": &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", code)},
+			":authCode": &types.AttributeValueMemberS{Value: fmt.Sprintf("%s", authCode)},
 		},
 	}
 

@@ -21,18 +21,18 @@ type steps struct {
 	t            *testing.T
 }
 
-type IncomingRequest struct {
-	Name        string
-	Email       string
-	Code        string
-	ToPay       uint
-	Paid        uint
-	PaidDate    string
-	Phone       string
-	Arrival     string
-	Diet        string
-	StayingLate string
-	Kids        uint
+type Message struct {
+	AuthCode     string
+	Name         string
+	Email        string
+	AmountToPay  uint
+	AmountPaid   uint
+	DatePaid     string
+	Telephone    string
+	ArrivalDay   string
+	StayingLate  string
+	NumberOfKids uint
+	Diet         string
 }
 
 func (s *steps) startContainers(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
@@ -82,19 +82,19 @@ func (s *steps) theAttendeeIsAddedToTheAttendeesDatastore() error {
 		return err
 	}
 
-	assert.Equal(s.t, "123456", attendee.Code)
+	assert.Equal(s.t, "123456", attendee.AuthCode)
 	assert.Equal(s.t, "Frank Ostrowski", attendee.Name)
 	assert.Equal(s.t, "frank.o@gfa.de", attendee.Email)
-	assert.Equal(s.t, "123456789", attendee.Phone)
-	assert.Equal(s.t, uint(1), attendee.Kids)
+	assert.Equal(s.t, "123456789", attendee.Telephone)
+	assert.Equal(s.t, uint(1), attendee.NumberOfKids)
 	assert.Equal(s.t, "I eat BASIC code for lunch", attendee.Diet)
-	assert.Equal(s.t, uint(5), attendee.Nights)
-	assert.Equal(s.t, uint(75), attendee.Financials.ToPay)
-	assert.Equal(s.t, uint(50), attendee.Financials.Paid)
-	assert.Equal(s.t, "28/05/2022", attendee.Financials.PaidDate)
-	assert.Equal(s.t, 25, attendee.Financials.Due)
+	assert.Equal(s.t, uint(5), attendee.NumberOfNights)
+	assert.Equal(s.t, uint(75), attendee.Financials.AmountToPay)
+	assert.Equal(s.t, uint(50), attendee.Financials.AmountPaid)
+	assert.Equal(s.t, "28/05/2022", attendee.Financials.DatePaid)
+	assert.Equal(s.t, 25, attendee.Financials.AmountDue)
 	assert.Equal(s.t, "Yes", attendee.StayingLate)
-	assert.Equal(s.t, "Wednesday", attendee.Arrival)
+	assert.Equal(s.t, "Wednesday", attendee.ArrivalDay)
 
 	return nil
 }
@@ -105,24 +105,24 @@ func (s *steps) theAttendeeIsUpdatedInTheAttendeesDatastore() error {
 		return err
 	}
 
-	assert.Equal(s.t, "123456", attendee.Code)
+	assert.Equal(s.t, "123456", attendee.AuthCode)
 	assert.Equal(s.t, "Frank Ostrowski", attendee.Name)
 	assert.Equal(s.t, "frank.o@gfa.de", attendee.Email)
-	assert.Equal(s.t, "123456789", attendee.Phone)
-	assert.Equal(s.t, uint(1), attendee.Kids)
+	assert.Equal(s.t, "123456789", attendee.Telephone)
+	assert.Equal(s.t, uint(1), attendee.NumberOfKids)
 	assert.Equal(s.t, "I eat BASIC code for lunch", attendee.Diet)
-	assert.Equal(s.t, uint(4), attendee.Nights)
-	assert.Equal(s.t, uint(75), attendee.Financials.ToPay)
-	assert.Equal(s.t, uint(75), attendee.Financials.Paid)
-	assert.Equal(s.t, "29/05/2022", attendee.Financials.PaidDate)
-	assert.Equal(s.t, 0, attendee.Financials.Due)
+	assert.Equal(s.t, uint(4), attendee.NumberOfNights)
+	assert.Equal(s.t, uint(75), attendee.Financials.AmountToPay)
+	assert.Equal(s.t, uint(75), attendee.Financials.AmountPaid)
+	assert.Equal(s.t, "29/05/2022", attendee.Financials.DatePaid)
+	assert.Equal(s.t, 0, attendee.Financials.AmountDue)
 	assert.Equal(s.t, "No", attendee.StayingLate)
-	assert.Equal(s.t, "Wednesday", attendee.Arrival)
+	assert.Equal(s.t, "Wednesday", attendee.ArrivalDay)
 
 	return nil
 }
 
-func (s *steps) theLambdaIsInvoked(payload IncomingRequest) error {
+func (s *steps) theLambdaIsInvoked(payload Message) error {
 	localLambdaInvocationPort, err := s.containers.GetLocalHostLambdaPort()
 	if err != nil {
 		return err
@@ -155,37 +155,37 @@ func (s *steps) theLambdaIsInvoked(payload IncomingRequest) error {
 	return nil
 }
 
-func (s *steps) theRegistrarIsInvokedWithANewAttendeeRecord() error {
-	request := IncomingRequest{
-		Name:        "Frank Ostrowski",
-		Email:       "frank.o@gfa.de",
-		Code:        "123456",
-		ToPay:       75,
-		Paid:        50,
-		PaidDate:    "28/05/2022",
-		Phone:       "123456789",
-		Arrival:     "Wednesday",
-		Diet:        "I eat BASIC code for lunch",
-		StayingLate: "Yes",
-		Kids:        1,
+func (s *steps) theAttendeeWriterIsInvokedWithANewAttendeeRecord() error {
+	request := Message{
+		Name:         "Frank Ostrowski",
+		Email:        "frank.o@gfa.de",
+		AuthCode:     "123456",
+		AmountToPay:  75,
+		AmountPaid:   50,
+		DatePaid:     "28/05/2022",
+		Telephone:    "123456789",
+		ArrivalDay:   "Wednesday",
+		Diet:         "I eat BASIC code for lunch",
+		StayingLate:  "Yes",
+		NumberOfKids: 1,
 	}
 
 	return s.theLambdaIsInvoked(request)
 }
 
-func (s *steps) theRegistrarIsInvokedWithAnUpdatedAttendeeRecord() error {
-	request := IncomingRequest{
-		Name:        "Frank Ostrowski",
-		Email:       "frank.o@gfa.de",
-		Code:        "123456",
-		ToPay:       75,
-		Paid:        75,
-		PaidDate:    "29/05/2022",
-		Phone:       "123456789",
-		Arrival:     "Wednesday",
-		Diet:        "I eat BASIC code for lunch",
-		StayingLate: "No",
-		Kids:        1,
+func (s *steps) theAttendeeWriterIsInvokedWithAnUpdatedAttendeeRecord() error {
+	request := Message{
+		Name:         "Frank Ostrowski",
+		Email:        "frank.o@gfa.de",
+		AuthCode:     "123456",
+		AmountToPay:  75,
+		AmountPaid:   75,
+		DatePaid:     "29/05/2022",
+		Telephone:    "123456789",
+		ArrivalDay:   "Wednesday",
+		Diet:         "I eat BASIC code for lunch",
+		StayingLate:  "No",
+		NumberOfKids: 1,
 	}
 	return s.theLambdaIsInvoked(request)
 }

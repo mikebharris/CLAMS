@@ -2,9 +2,8 @@ resource "aws_dynamodb_table_item" "attendees_golden_data" {
   table_name = aws_dynamodb_table.attendees_table.name
   hash_key   = aws_dynamodb_table.attendees_table.hash_key
   count      = 1
-
   item = jsonencode({
-    "Code" : {
+    "AuthCode" : {
       "S" : "5F7BCD"
     },
     "Name" : {
@@ -13,10 +12,10 @@ resource "aws_dynamodb_table_item" "attendees_golden_data" {
     "Email" : {
       "S" : "max.spillage@somedomain.com"
     },
-    "Phone" : {
+    "Telephone" : {
       "S" : "+1-800-BAMSROCKS"
     },
-    "Kids" : {
+    "NumberOfKids" : {
       "N" : "1"
     },
     "Diet" : {
@@ -24,16 +23,16 @@ resource "aws_dynamodb_table_item" "attendees_golden_data" {
     },
     "Financials" : {
       "M" : {
-        "ToPay" : {
+        "AmountToPay" : {
           "N" : "75"
         },
-        "Paid" : {
+        "AmountPaid" : {
           "N" : "50"
         },
-        "PaidDate" : {
+        "DatePaid" : {
           "S" : "28/05/2022"
         },
-        "Due" : {
+        "AmountDue" : {
           "N" : "25"
         }
       }
@@ -41,10 +40,10 @@ resource "aws_dynamodb_table_item" "attendees_golden_data" {
     "StayingLate" : {
       "S" : "Yes"
     },
-    "Arrival": {
+    "ArrivalDay": {
       "S": "Wednesday"
     }
-    "Nights": {
+    "NumberOfNights": {
       "N": "5"
     }
   })

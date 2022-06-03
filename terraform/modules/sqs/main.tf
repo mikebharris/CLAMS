@@ -1,5 +1,5 @@
 resource "aws_sqs_queue" "attendee_input_queue" {
-  name = "${var.product}-${var.input_queue_name}"
+  name = "${var.product}-${var.environment}-${var.input_queue_name}"
 
   redrive_policy = jsonencode({
     "deadLetterTargetArn" = aws_sqs_queue.attendee_input_dlq.arn,
@@ -11,15 +11,13 @@ resource "aws_sqs_queue" "attendee_input_queue" {
     Contact       = var.contact
     Environment   = var.environment
     Product       = var.product
-    SubProduct    = var.sub_product
-    CostCode      = var.cost_code
     Orchestration = var.orchestration
     Description   = "SQS Queue for holding attendees"
   }
 }
 
 resource "aws_sqs_queue" "attendee_input_dlq" {
-  name                      = "${var.product}-${var.input_queue_name}-DLQ"
+  name                      = "${var.product}-${var.environment}-${var.input_queue_name}-DLQ"
   message_retention_seconds = var.dlq_retention_period
 
   tags = {
@@ -27,8 +25,6 @@ resource "aws_sqs_queue" "attendee_input_dlq" {
     Contact       = var.contact
     Environment   = var.environment
     Product       = var.product
-    SubProduct    = var.sub_product
-    CostCode      = var.cost_code
     Orchestration = var.orchestration
     Description   = "SQS dead letter queue for attendees that could not be processed by the eHAMS Attendee Librarian"
   }

@@ -15,24 +15,24 @@ type attendeesDb interface {
 }
 
 type Attendee struct {
-	Code        string
-	Name        string
-	Email       string
-	Phone       string
-	Kids        uint
-	Diet        string
-	Financials  Financials
-	Arrival     string
-	Nights      uint
-	StayingLate string
-	CreatedTime time.Time
+	AuthCode       string
+	Name           string
+	Email          string
+	Telephone      string
+	NumberOfKids   uint
+	Diet           string
+	Financials     Financials
+	ArrivalDay     string
+	NumberOfNights uint
+	StayingLate    string
+	CreatedTime    time.Time
 }
 
 type Financials struct {
-	ToPay    uint   `json:"ToPay"`
-	Paid     uint   `json:"Paid"`
-	Due      int    `json:"Due"`
-	PaidDate string `json:"PaidDate"`
+	AmountToPay uint   `json:"AmountToPay"`
+	AmountPaid  uint   `json:"AmountPaid"`
+	AmountDue   int    `json:"AmountDue"`
+	DatePaid    string `json:"DatePaid"`
 }
 
 type IAttendees interface {
@@ -44,15 +44,15 @@ type Attendees struct {
 	Table string
 }
 
-func (r *Attendees) FetchAttendee(ctx context.Context, code string) (*Attendee, error) {
+func (r *Attendees) FetchAttendee(ctx context.Context, authCode string) (*Attendee, error) {
 	record, err := r.Db.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(r.Table),
 		Key: map[string]types.AttributeValue{
-			"Code": &types.AttributeValueMemberS{Value: code},
+			"AuthCode": &types.AttributeValueMemberS{Value: authCode},
 		},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fetching attendee %s from DynamoDB: %v", code, err)
+		return nil, fmt.Errorf("fetching attendee %s from DynamoDB: %v", authCode, err)
 	}
 
 	if record.Item == nil {
