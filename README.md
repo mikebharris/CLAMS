@@ -1,4 +1,7 @@
 # CLAMS
+
+"BAMS in the Cloud"
+
 A personal learning project using a connection to a legacy event management system as a way of illustrating serverless architectures using Go and Terraform and AWS.
 
 # Deploying
