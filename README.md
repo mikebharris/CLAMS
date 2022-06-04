@@ -33,3 +33,7 @@ Options:
   -r STRING, --region=STRING
   -t STRING, --attendees-table=STRING
 ```
+
+# Architecture
+
+![The architecture of CLAMS](CLAMS-architecture.png)
