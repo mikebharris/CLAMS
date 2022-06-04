@@ -27,7 +27,7 @@ type Message struct {
 }
 
 type handler struct {
-	attendees storage.IAttendees
+	attendees storage.Attendees
 }
 
 func (h *handler) handleRequest(ctx context.Context, sqsEvent events.SQSEvent) (events.SQSEventResponse, error) {

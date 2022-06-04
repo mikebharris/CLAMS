@@ -10,11 +10,6 @@ import (
 	"time"
 )
 
-type attendeesDb interface {
-	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
-	Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(*dynamodb.Options)) (*dynamodb.ScanOutput, error)
-}
-
 type ApiResponse struct {
 	Attendees []Attendee `json:"Attendees"`
 }
@@ -40,13 +35,8 @@ type Financials struct {
 	DatePaid    string `json:"DatePaid"`
 }
 
-type IAttendees interface {
-	FetchAttendee(ctx context.Context, code string) (*ApiResponse, error)
-	FetchAllAttendees(ctx context.Context) (*ApiResponse, error)
-}
-
 type Attendees struct {
-	Db    attendeesDb
+	Db    *dynamodb.Client
 	Table string
 }
 

@@ -8,11 +8,6 @@ import (
 	"time"
 )
 
-type attendeesDb interface {
-	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
-	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
-}
-
 type Attendee struct {
 	AuthCode       string
 	Name           string
@@ -34,12 +29,8 @@ type Financials struct {
 	DatePaid    string `json:"DatePaid"`
 }
 
-type IAttendees interface {
-	Store(ctx context.Context, attendee Attendee) error
-}
-
 type Attendees struct {
-	Db    attendeesDb
+	Db    *dynamodb.Client
 	Table string
 }
 

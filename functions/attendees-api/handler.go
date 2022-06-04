@@ -11,7 +11,7 @@ import (
 )
 
 type Handler struct {
-	attendees storage.IAttendees
+	attendees storage.Attendees
 }
 
 func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
