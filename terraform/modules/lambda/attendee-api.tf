@@ -93,7 +93,7 @@ resource "aws_lambda_function" "attendees_api_lambda_function" {
 
 resource "aws_apigatewayv2_api" "attendees_api_lambda_http_gateway" {
   name          = "${var.product}-${var.environment}-attendees-api-http-gateway"
-  description   = "HTTP API Gateway for MBH Test eHAMS API Lambda."
+  description   = "HTTP API Gateway for CLAMS API Lambda."
   protocol_type = "HTTP"
 
   dynamic "cors_configuration" {

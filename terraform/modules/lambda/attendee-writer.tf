@@ -51,7 +51,7 @@ resource "aws_lambda_function" "attendee_writer_lambda_function" {
     Environment   = var.environment
     Product       = var.product
     Orchestration = var.orchestration
-    Description   = "Lambda for processing incoming eHAMS attendees"
+    Description   = "Lambda for processing incoming CLAMS attendees"
   }
 }
 
@@ -60,7 +60,6 @@ data "aws_iam_policy_document" "attendee_writer_iam_policy_document" {
     effect  = "Allow"
     actions = [
       "ec2:DescribeNetworkInterfaces",
-      "dynamodb:UpdateItem",
       "dynamodb:PutItem",
     ]
     resources = [

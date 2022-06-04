@@ -26,7 +26,7 @@ resource "aws_sqs_queue" "attendee_input_dlq" {
     Environment   = var.environment
     Product       = var.product
     Orchestration = var.orchestration
-    Description   = "SQS dead letter queue for attendees that could not be processed by the eHAMS Attendee Librarian"
+    Description   = "SQS dead letter queue for attendees that could not be processed by the CLAMS Attendee Librarian"
   }
 }
 
