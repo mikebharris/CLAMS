@@ -16,13 +16,13 @@ type Message struct {
 	AuthCode     string
 	Name         string
 	Email        string
-	AmountToPay  uint
-	AmountPaid   uint
+	AmountToPay  int
+	AmountPaid   int
 	DatePaid     string
 	Telephone    string
 	ArrivalDay   string
 	StayingLate  string
-	NumberOfKids uint
+	NumberOfKids int
 	Diet         string
 }
 
@@ -94,8 +94,8 @@ func (h *handler) jsonToMessageObject(message events.SQSMessage) (*Message, erro
 	return &r, nil
 }
 
-func (h *handler) computeNights(arrival string, stayingLate string) uint {
-	var nights uint = 1
+func (h *handler) computeNights(arrival string, stayingLate string) int {
+	var nights int = 1
 
 	switch arrival {
 	case "Wednesday":

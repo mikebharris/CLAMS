@@ -25,13 +25,13 @@ type Message struct {
 	AuthCode     string
 	Name         string
 	Email        string
-	AmountToPay  uint
-	AmountPaid   uint
+	AmountToPay  int
+	AmountPaid   int
 	DatePaid     string
 	Telephone    string
 	ArrivalDay   string
 	StayingLate  string
-	NumberOfKids uint
+	NumberOfKids int
 	Diet         string
 }
 
@@ -86,11 +86,11 @@ func (s *steps) theAttendeeIsAddedToTheAttendeesDatastore() error {
 	assert.Equal(s.t, "Frank Ostrowski", attendee.Name)
 	assert.Equal(s.t, "frank.o@gfa.de", attendee.Email)
 	assert.Equal(s.t, "123456789", attendee.Telephone)
-	assert.Equal(s.t, uint(1), attendee.NumberOfKids)
+	assert.Equal(s.t, 1, attendee.NumberOfKids)
 	assert.Equal(s.t, "I eat BASIC code for lunch", attendee.Diet)
-	assert.Equal(s.t, uint(5), attendee.NumberOfNights)
-	assert.Equal(s.t, uint(75), attendee.Financials.AmountToPay)
-	assert.Equal(s.t, uint(50), attendee.Financials.AmountPaid)
+	assert.Equal(s.t, 5, attendee.NumberOfNights)
+	assert.Equal(s.t, 75, attendee.Financials.AmountToPay)
+	assert.Equal(s.t, 50, attendee.Financials.AmountPaid)
 	assert.Equal(s.t, "28/05/2022", attendee.Financials.DatePaid)
 	assert.Equal(s.t, 25, attendee.Financials.AmountDue)
 	assert.Equal(s.t, "Yes", attendee.StayingLate)
@@ -109,11 +109,11 @@ func (s *steps) theAttendeeIsUpdatedInTheAttendeesDatastore() error {
 	assert.Equal(s.t, "Frank Ostrowski", attendee.Name)
 	assert.Equal(s.t, "frank.o@gfa.de", attendee.Email)
 	assert.Equal(s.t, "123456789", attendee.Telephone)
-	assert.Equal(s.t, uint(1), attendee.NumberOfKids)
+	assert.Equal(s.t, 1, attendee.NumberOfKids)
 	assert.Equal(s.t, "I eat BASIC code for lunch", attendee.Diet)
-	assert.Equal(s.t, uint(4), attendee.NumberOfNights)
-	assert.Equal(s.t, uint(75), attendee.Financials.AmountToPay)
-	assert.Equal(s.t, uint(75), attendee.Financials.AmountPaid)
+	assert.Equal(s.t, 4, attendee.NumberOfNights)
+	assert.Equal(s.t, 75, attendee.Financials.AmountToPay)
+	assert.Equal(s.t, 75, attendee.Financials.AmountPaid)
 	assert.Equal(s.t, "29/05/2022", attendee.Financials.DatePaid)
 	assert.Equal(s.t, 0, attendee.Financials.AmountDue)
 	assert.Equal(s.t, "No", attendee.StayingLate)

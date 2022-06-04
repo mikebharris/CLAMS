@@ -18,13 +18,13 @@ type Message struct {
 	AuthCode     string
 	Name         string
 	Email        string
-	AmountToPay  uint
-	AmountPaid   uint
+	AmountToPay  int
+	AmountPaid   int
 	DatePaid     string
 	Telephone    string
 	ArrivalDay   string
 	StayingLate  string
-	NumberOfKids uint
+	NumberOfKids int
 	Diet         string
 }
 
@@ -62,13 +62,13 @@ func main() {
 			AuthCode:     record[0],
 			Name:         record[1],
 			Email:        record[2],
-			AmountToPay:  toUint(record[3]),
-			AmountPaid:   toUint(record[4]),
+			AmountToPay:  toInt(record[3]),
+			AmountPaid:   toInt(record[4]),
 			DatePaid:     record[5],
 			Telephone:    record[6],
 			ArrivalDay:   record[7],
 			StayingLate:  record[8],
-			NumberOfKids: toUint(record[9]),
+			NumberOfKids: toInt(record[9]),
 			Diet:         record[10],
 		}
 
@@ -80,9 +80,9 @@ func main() {
 	}
 }
 
-func toUint(s string) uint {
-	u, _ := strconv.ParseUint(s, 0, 0)
-	return uint(u)
+func toInt(s string) int {
+	i, _ := strconv.ParseInt(s, 0, 0)
+	return int(i)
 }
 
 type SqsClient struct {
