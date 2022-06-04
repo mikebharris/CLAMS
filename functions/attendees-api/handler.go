@@ -15,22 +15,26 @@ type Handler struct {
 }
 
 func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	var attendees *storage.ApiResponse
+	var err error
+
 	authCode := request.PathParameters["authCode"]
-	if authCode == "" {
-		return events.APIGatewayProxyResponse{StatusCode: http.StatusNotImplemented}, nil
+	if authCode != "" {
+		attendees, err = h.attendees.FetchAttendee(ctx, authCode)
+	} else {
+		attendees, err = h.attendees.FetchAllAttendees(ctx)
 	}
 
-	attendee, err := h.attendees.FetchAttendee(ctx, authCode)
 	if err != nil {
 		log.Println(err)
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, nil
 	}
 
-	if attendee == nil {
+	if len(attendees.Attendees) == 0 {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusNotFound}, nil
 	}
 
-	m, _ := json.Marshal(attendee)
+	m, _ := json.Marshal(attendees)
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}

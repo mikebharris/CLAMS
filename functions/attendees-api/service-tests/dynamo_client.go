@@ -23,18 +23,18 @@ type Attendee struct {
 	Name           string
 	Email          string
 	Telephone      string
-	NumberOfKids   uint
+	NumberOfKids   int
 	Diet           string
 	Financials     Financials
 	ArrivalDay     string
-	NumberOfNights uint
+	NumberOfNights int
 	StayingLate    string
 	CreatedTime    time.Time
 }
 
 type Financials struct {
-	AmountToPay uint   `json:"To Pay"`
-	AmountPaid  uint   `json:"AmountPaid"`
+	AmountToPay int    `json:"AmountToPay"`
+	AmountPaid  int    `json:"AmountPaid"`
 	DatePaid    string `json:"DatePaid"`
 	AmountDue   int    `json:"AmountDue"`
 }

@@ -23,20 +23,8 @@ type steps struct {
 	t            *testing.T
 }
 
-type ApiResponse struct {
-	AuthCode       string
-	Name           string
-	Email          string
-	Telephone      string
-	NumberOfKids   uint
-	Diet           string
-	NumberOfNights uint
-	Financials     struct {
-		AmountToPay int    `json:"AmountToPay"`
-		AmountPaid  int    `json:"AmountPaid"`
-		AmountDue   int    `json:"AmountDue"`
-		DatePaid    string `json:"DatePaid"`
-	} `json:"Financials"`
+type AttendeesApiResponse struct {
+	Attendees []Attendee `json:"Attendees"`
 }
 
 func (s *steps) startContainers(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
@@ -83,8 +71,8 @@ func (s *steps) stopContainers(ctx context.Context, sc *godog.Scenario, err erro
 }
 
 func (s *steps) anAttendeeRecordExistsInTheAttendeesDatastore() error {
-	err := s.DynamoClient.addAttendee(Attendee{
-		AuthCode:     "12345",
+	if err := s.DynamoClient.addAttendee(Attendee{
+		AuthCode:     "123456",
 		Name:         "Frank",
 		Email:        "frank.o@gfa.de",
 		Telephone:    "123456789",
@@ -100,12 +88,41 @@ func (s *steps) anAttendeeRecordExistsInTheAttendeesDatastore() error {
 		NumberOfNights: 5,
 		StayingLate:    "Yes",
 		CreatedTime:    time.Now(),
-	})
+	}); err != nil {
+		return err
+	}
 
-	return err
+	return s.DynamoClient.addAttendee(Attendee{
+		AuthCode:     "678901",
+		Name:         "Zak Mindwarp",
+		Email:        "zakm@spangled.net",
+		Telephone:    "123456789",
+		NumberOfKids: 0,
+		Diet:         "I eat LSD for lunch",
+		Financials: Financials{
+			AmountToPay: 40,
+			AmountPaid:  40,
+			DatePaid:    "22/05/2022",
+			AmountDue:   0,
+		},
+		ArrivalDay:     "Thursday",
+		NumberOfNights: 3,
+		StayingLate:    "No",
+		CreatedTime:    time.Now(),
+	})
 }
 
-func (s *steps) theFrontendFetchesTheRecordFromTheAPI() error {
+func (s *steps) theFrontendRequestsTheRecordFromTheAPI() error {
+	params := make(map[string]string)
+	params["authCode"] = "123456"
+	return s.invokeLambdaWithParameters(params)
+}
+
+func (s *steps) theFrontendRequestsAllRecordsFromTheAPI() error {
+	return s.invokeLambdaWithParameters(nil)
+}
+
+func (s *steps) invokeLambdaWithParameters(params map[string]string) error {
 	localLambdaInvocationPort, err := s.containers.GetLocalHostLambdaPort()
 	if err != nil {
 		fmt.Println(err)
@@ -113,8 +130,6 @@ func (s *steps) theFrontendFetchesTheRecordFromTheAPI() error {
 	}
 	url := fmt.Sprintf("http://localhost:%d/2015-03-31/functions/myfunction/invocations", localLambdaInvocationPort)
 
-	params := make(map[string]string)
-	params["authCode"] = "12345"
 	request := events.APIGatewayProxyRequest{PathParameters: params}
 	requestJsonBytes, err := json.Marshal(request)
 	if err != nil {
@@ -145,26 +160,73 @@ func (s *steps) theFrontendFetchesTheRecordFromTheAPI() error {
 	return nil
 }
 
-func (s *steps) theRecordIsReturned() error {
-
+func (s *steps) aSingleRecordIsReturned() error {
 	assert.Equal(s.t, http.StatusOK, responseFromLambda.StatusCode)
 
-	apiResponse := ApiResponse{}
+	apiResponse := AttendeesApiResponse{}
 	if err := json.Unmarshal([]byte(responseFromLambda.Body), &apiResponse); err != nil {
 		return fmt.Errorf("unmarshalling result: %s", err)
 	}
 
-	assert.Equal(s.t, "12345", apiResponse.AuthCode)
-	assert.Equal(s.t, "Frank", apiResponse.Name)
-	assert.Equal(s.t, "frank.o@gfa.de", apiResponse.Email)
-	assert.Equal(s.t, "123456789", apiResponse.Telephone)
-	assert.Equal(s.t, uint(4), apiResponse.NumberOfKids)
-	assert.Equal(s.t, "I eat BASIC code for lunch", apiResponse.Diet)
-	assert.Equal(s.t, uint(5), apiResponse.NumberOfNights)
-	assert.Equal(s.t, 1024, apiResponse.Financials.AmountToPay)
-	assert.Equal(s.t, 512, apiResponse.Financials.AmountPaid)
-	assert.Equal(s.t, "10/05/2022", apiResponse.Financials.DatePaid)
-	assert.Equal(s.t, 512, apiResponse.Financials.AmountDue)
+	assert.Equal(s.t, 1, len(apiResponse.Attendees))
+
+	assert.Equal(s.t, "123456", apiResponse.Attendees[0].AuthCode)
+	assert.Equal(s.t, "Frank", apiResponse.Attendees[0].Name)
+	assert.Equal(s.t, "frank.o@gfa.de", apiResponse.Attendees[0].Email)
+	assert.Equal(s.t, "123456789", apiResponse.Attendees[0].Telephone)
+	assert.Equal(s.t, 4, apiResponse.Attendees[0].NumberOfKids)
+	assert.Equal(s.t, "I eat BASIC code for lunch", apiResponse.Attendees[0].Diet)
+	assert.Equal(s.t, 5, apiResponse.Attendees[0].NumberOfNights)
+	assert.Equal(s.t, 1024, apiResponse.Attendees[0].Financials.AmountToPay)
+	assert.Equal(s.t, 512, apiResponse.Attendees[0].Financials.AmountPaid)
+	assert.Equal(s.t, "10/05/2022", apiResponse.Attendees[0].Financials.DatePaid)
+	assert.Equal(s.t, 512, apiResponse.Attendees[0].Financials.AmountDue)
+	assert.Equal(s.t, "Wednesday", apiResponse.Attendees[0].ArrivalDay)
+	assert.Equal(s.t, "Yes", apiResponse.Attendees[0].StayingLate)
+	assert.IsType(s.t, time.Time{}, apiResponse.Attendees[0].CreatedTime)
+
+	return nil
+}
+
+func (s *steps) theRecordsAreReturned() error {
+	assert.Equal(s.t, http.StatusOK, responseFromLambda.StatusCode)
+
+	apiResponse := AttendeesApiResponse{}
+	if err := json.Unmarshal([]byte(responseFromLambda.Body), &apiResponse); err != nil {
+		return fmt.Errorf("unmarshalling result: %s", err)
+	}
+
+	assert.Equal(s.t, 2, len(apiResponse.Attendees))
+
+	assert.Equal(s.t, "678901", apiResponse.Attendees[0].AuthCode)
+	assert.Equal(s.t, "Zak Mindwarp", apiResponse.Attendees[0].Name)
+	assert.Equal(s.t, "zakm@spangled.net", apiResponse.Attendees[0].Email)
+	assert.Equal(s.t, "123456789", apiResponse.Attendees[0].Telephone)
+	assert.Equal(s.t, 0, apiResponse.Attendees[0].NumberOfKids)
+	assert.Equal(s.t, "I eat LSD for lunch", apiResponse.Attendees[0].Diet)
+	assert.Equal(s.t, 3, apiResponse.Attendees[0].NumberOfNights)
+	assert.Equal(s.t, 40, apiResponse.Attendees[0].Financials.AmountToPay)
+	assert.Equal(s.t, 40, apiResponse.Attendees[0].Financials.AmountPaid)
+	assert.Equal(s.t, "22/05/2022", apiResponse.Attendees[0].Financials.DatePaid)
+	assert.Equal(s.t, 0, apiResponse.Attendees[0].Financials.AmountDue)
+	assert.Equal(s.t, "Thursday", apiResponse.Attendees[0].ArrivalDay)
+	assert.Equal(s.t, "No", apiResponse.Attendees[0].StayingLate)
+	assert.IsType(s.t, time.Time{}, apiResponse.Attendees[0].CreatedTime)
+
+	assert.Equal(s.t, "123456", apiResponse.Attendees[1].AuthCode)
+	assert.Equal(s.t, "Frank", apiResponse.Attendees[1].Name)
+	assert.Equal(s.t, "frank.o@gfa.de", apiResponse.Attendees[1].Email)
+	assert.Equal(s.t, "123456789", apiResponse.Attendees[1].Telephone)
+	assert.Equal(s.t, 4, apiResponse.Attendees[1].NumberOfKids)
+	assert.Equal(s.t, "I eat BASIC code for lunch", apiResponse.Attendees[1].Diet)
+	assert.Equal(s.t, 5, apiResponse.Attendees[1].NumberOfNights)
+	assert.Equal(s.t, 1024, apiResponse.Attendees[1].Financials.AmountToPay)
+	assert.Equal(s.t, 512, apiResponse.Attendees[1].Financials.AmountPaid)
+	assert.Equal(s.t, "10/05/2022", apiResponse.Attendees[1].Financials.DatePaid)
+	assert.Equal(s.t, 512, apiResponse.Attendees[1].Financials.AmountDue)
+	assert.Equal(s.t, "Wednesday", apiResponse.Attendees[1].ArrivalDay)
+	assert.Equal(s.t, "Yes", apiResponse.Attendees[1].StayingLate)
+	assert.IsType(s.t, time.Time{}, apiResponse.Attendees[1].CreatedTime)
 
 	return nil
 }

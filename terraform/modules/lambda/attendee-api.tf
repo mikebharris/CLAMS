@@ -27,7 +27,7 @@ data "aws_iam_policy_document" "attendees_api_iam_policy_document" {
     actions = [
       "ec2:DescribeNetworkInterfaces",
       "dynamodb:GetItem",
-      "dynamodb:Query"
+      "dynamodb:Scan"
     ]
     resources = [
       var.attendees_table_arn

@@ -17,8 +17,11 @@ func TestFeatures(t *testing.T) {
 			ctx.After(steps.stopContainers)
 
 			ctx.Step(`^an attendee record exists in the attendees datastore$`, steps.anAttendeeRecordExistsInTheAttendeesDatastore)
-			ctx.Step(`^the front-end requests the attendee record from the API$`, steps.theFrontendFetchesTheRecordFromTheAPI)
-			ctx.Step(`^the record is returned$`, steps.theRecordIsReturned)
+			ctx.Step(`^the front-end requests the attendee record from the API$`, steps.theFrontendRequestsTheRecordFromTheAPI)
+			ctx.Step(`^the record is returned$`, steps.aSingleRecordIsReturned)
+
+			ctx.Step(`^the front-end requests all records from the API$`, steps.theFrontendRequestsAllRecordsFromTheAPI)
+			ctx.Step(`^all available records are returned$`, steps.theRecordsAreReturned)
 		},
 		Options: &godog.Options{
 			Format:   "pretty",
