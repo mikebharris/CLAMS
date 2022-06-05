@@ -32,8 +32,8 @@ func (c *Containers) Start() error {
 		return err
 	}
 
-	fmt.Println("Sleeping for 10 seconds while containers start")
-	time.Sleep(10 * time.Second)
+	fmt.Println("Sleeping for 5 seconds while containers start")
+	time.Sleep(5 * time.Second)
 	return nil
 }
 
