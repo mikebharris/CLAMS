@@ -1,5 +1,5 @@
-output "api_endpoint_url" {
-  value = module.lambda.api_endpoint_url
+output "clams_api_endpoint_url" {
+  value = module.lambda.clams_api_endpoint_url
 }
 
 output "sqs_queue_name" {
