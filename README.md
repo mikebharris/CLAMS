@@ -1,12 +1,28 @@
 # CLAMS
 
-CLAMS => "BAMS in the Cloud"
+_CLAMS => "BAMS in the Cloud"_
 
-A personal learning project using a connection to a legacy event management system as a way of illustrating serverless architectures using Go and Terraform and AWS.
+A personal learning project using a connection to a legacy event management system as a way of illustrating serverless architectures using Go, Python, Fabric and Terraform.  CLAMS so far employs the following AWS services:
+
+* API Gateway
+* DynamoDB
+* Lambda
+* S3
+* SQS
+
+## Architecture
 
 ![The architecture of CLAMS](CLAMS-architecture.png)
 
-To use CLAMS, get the API Gateway endpoint via AWS Console; it's also displayed as the output of the deployment script (see below).
+## Using CLAMS
+
+To use CLAMS, get the API Gateway endpoint via AWS Console; it's also displayed as the output of the deployment script (see below).  There is an [example Postman collection](CLAMS.postman_collection.json) that you can use.  The endpoints provided are:
+
+* /clams/attendees - fetch a list of all attendees
+* /clams/attendee/5F7BCD - get a specific attendee's details (the code is for the example attendee defined in [](terraform/modules/dynamo/items.tf))
+* /clams/report - fetch some statistics about the event
+
+To upload data to CLAMS from BAMS, please see the [Uploader utility's README](uploader/README.md) and the BAMS Documentation for the [Home Screen](https://github.com/mikebharris/BAMS#home-screen)'s [Upload to CLAMS functionality](https://github.com/mikebharris/BAMS#upload-to-clams-functionality) .
 
 # Running Tests
 

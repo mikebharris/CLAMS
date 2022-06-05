@@ -1,0 +1,80 @@
+{
+	"info": {
+		"_postman_id": "919b40fa-b7dd-4ad9-88c2-58e9f50f90e8",
+		"name": "CLAMS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4902280"
+	},
+	"item": [
+		{
+			"name": "Report",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://[path.to.api-gateway.uri]/clams/report",
+					"protocol": "https",
+					"host": [
+						"6cqh5d5fua",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"attendees",
+						"5F7BCD"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "All Attendees",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://[path.to.api-gateway.uri]/clams/attendees",
+					"protocol": "https",
+					"host": [
+						"livxn9u893",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"clams",
+						"attendees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Attendee",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://[path.to.api-gateway.uri]/clams/attendee/5F7BCD",
+					"protocol": "https",
+					"host": [
+						"livxn9u893",
+						"execute-api",
+						"us-east-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"clams",
+						"attendee",
+						"5F7BCD"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
