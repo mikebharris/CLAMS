@@ -16,8 +16,8 @@ func TestFeatures(t *testing.T) {
 			ctx.Before(steps.setUpDynamoClient)
 			ctx.After(steps.stopContainers)
 
-			ctx.Step(`^an attendee record exists in the attendees datastore$`, steps.anAttendeeRecordExistsInTheAttendeesDatastore)
-			ctx.Step(`^the front-end requests the attendee record from the API$`, steps.theFrontendRequestsTheRecordFromTheAPI)
+			ctx.Step(`^some attendee records exist in the attendees datastore$`, steps.someAttendeeRecordsExistInTheAttendeesDatastore)
+			ctx.Step(`^the front-end requests a specific attendee record from the API$`, steps.theFrontendRequestsASpecificRecordFromTheAPI)
 			ctx.Step(`^the record is returned$`, steps.aSingleRecordIsReturned)
 
 			ctx.Step(`^the front-end requests all records from the API$`, steps.theFrontendRequestsAllRecordsFromTheAPI)

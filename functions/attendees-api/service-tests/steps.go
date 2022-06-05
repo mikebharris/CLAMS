@@ -70,7 +70,7 @@ func (s *steps) stopContainers(ctx context.Context, sc *godog.Scenario, err erro
 	return ctx, err
 }
 
-func (s *steps) anAttendeeRecordExistsInTheAttendeesDatastore() error {
+func (s *steps) someAttendeeRecordsExistInTheAttendeesDatastore() error {
 	if err := s.DynamoClient.addAttendee(Attendee{
 		AuthCode:     "123456",
 		Name:         "Frank",
@@ -112,7 +112,7 @@ func (s *steps) anAttendeeRecordExistsInTheAttendeesDatastore() error {
 	})
 }
 
-func (s *steps) theFrontendRequestsTheRecordFromTheAPI() error {
+func (s *steps) theFrontendRequestsASpecificRecordFromTheAPI() error {
 	params := make(map[string]string)
 	params["authCode"] = "123456"
 	return s.invokeLambdaWithParameters(params)
