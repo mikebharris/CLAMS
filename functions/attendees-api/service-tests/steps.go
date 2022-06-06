@@ -113,9 +113,7 @@ func (s *steps) someAttendeeRecordsExistInTheAttendeesDatastore() error {
 }
 
 func (s *steps) theFrontendRequestsASpecificRecordFromTheAPI() error {
-	params := make(map[string]string)
-	params["authCode"] = "123456"
-	return s.invokeLambdaWithParameters(params)
+	return s.invokeLambdaWithParameters(map[string]string{"authCode": "123456"})
 }
 
 func (s *steps) theFrontendRequestsAllRecordsFromTheAPI() error {
