@@ -9,3 +9,9 @@ variable orchestration {
 variable distribution_bucket {}
 variable input_queue_name {}
 variable attendees_table_name {}
+variable certificate_domain{
+  default = "events.hacktionlab.org"
+}
+variable frontend_domain{
+  default = "clams.events.hacktionlab.org"
+}

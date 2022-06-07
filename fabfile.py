@@ -1,6 +1,7 @@
 import contextlib
 import os
 import shutil
+import re
 from os import path
 
 from invoke import task, run as local
@@ -45,6 +46,15 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
     with do_in_directory('terraform'):
         local(command)
 
+    if mode == 'apply':
+        with do_in_directory('terraform'):
+            result = local('terraform output')
+            search = re.search("(https.*)", result.stdout)
+            api_url = search.group(0)[:len(search.group(0))-1]
+
+        with do_in_directory('frontend'):
+            build_frontend(api_url)
+
 
 def build_lambdas():
     for f in ['attendees-api', 'attendee-writer', 'report-api']:
@@ -66,6 +76,14 @@ def remove_local_terraform_state_files_to_prevent_deploying_in_wrong_environment
     with do_in_directory('terraform'):
         if path.exists('.terraform'):
             shutil.rmtree('.terraform')
+
+
+def build_frontend(api_url: str):
+    local('API_GATEWAY_URL={api_url} npm run build'.format(api_url=api_url))
+
+
+def deploy_frontend():
+    local('aws s3 cp frontend/public s3://clams.events.hacktionlab.org --recursive')
 
 
 @contextlib.contextmanager
