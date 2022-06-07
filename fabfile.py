@@ -49,7 +49,7 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
     with do_in_directory('terraform'):
         local(command)
 
-    if mode == 'apply':
+    if mode == 'apply' and frontend == 'yes':
         with do_in_directory('terraform'):
             result = local('terraform output')
             search = re.search("(https.*)", result.stdout)
@@ -57,6 +57,8 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
 
         with do_in_directory('frontend'):
             build_frontend(api_url)
+
+        deploy_frontend()
 
 
 def build_lambdas():
