@@ -1,9 +1,9 @@
 package main
 
 import (
-	"attendees-api/storage"
 	"context"
 	"os"
+	"report-api/storage"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"

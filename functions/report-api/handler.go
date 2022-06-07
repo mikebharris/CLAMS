@@ -1,11 +1,11 @@
 package main
 
 import (
-	"attendees-api/storage"
 	"context"
 	"encoding/json"
 	"log"
 	"net/http"
+	"report-api/storage"
 
 	"github.com/aws/aws-lambda-go/events"
 )
