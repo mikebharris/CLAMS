@@ -36,15 +36,28 @@ AWS_SECRET_ACCESS_KEY=x AWS_ACCESS_KEY_ID=y make int-test
 
 # Deploying
 
-There is a Python Fabric 2 script to help you do this.  First authenticate with AWS and then run the following from the command line (changing _mode_ from _plan_, _apply_, or _destroy_ and setting the other variables:
+There is a Python Fabric 2 script to help you do this.  First authenticate with AWS, either using a SSO integration tool such as XXXX, or by fetching your credentials from IAM.
+
+First time you'll need to run the _init_ process (for example):
+
+```shell
+AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY fab terraform --account-number=111111111111 --contact=your@email.com --mode=init
+```
+
+A _plan_ tests your Terraform config's syntax:
 
 ```shell
 AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY fab terraform --account-number=111111111111 --contact=your@email.com --mode=plan
+```
 
+An _apply_ makes your changes so in your target AWS account:
+```shell
 AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY fab terraform --account-number=111111111111 --contact=your@email.com --mode=apply
+```
 
+And finally _destroy_ takes it all down again:
+```shell
 AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY fab terraform --account-number=111111111111 --contact=your@email.com --mode=destroy
-
 ```
 
 The command line supports the following:
