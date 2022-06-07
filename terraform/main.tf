@@ -50,6 +50,7 @@ module "route53" {
   source = "./modules/route53"
 
   cloudfront_domain_name = module.cloudfront.cloudfront_domain_name
+  cloudfront_hosted_zone_id = module.cloudfront.cloudfront_hosted_zone_id
   certificate_domain = var.certificate_domain
   frontend_domain  = var.frontend_domain
 }

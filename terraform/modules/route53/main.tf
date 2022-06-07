@@ -1,12 +1,11 @@
 resource "aws_route53_record" "clams_frontend_a_record" {
   zone_id = data.aws_route53_zone.clams_r53_zone.id
-  name    = var.frontend_domain
+  name    = "clams"
   type    = "A"
 
   alias {
     name                   = var.cloudfront_domain_name
-    //zone_id value is static
-    zone_id                = "Z0640145NHPXT7F33V6B"
+    zone_id                = var.cloudfront_hosted_zone_id
     evaluate_target_health = false
   }
 }
