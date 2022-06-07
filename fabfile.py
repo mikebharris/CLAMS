@@ -10,12 +10,12 @@ from invoke import task, run as local
 @task
 def terraform(context, account_number="", contact="", distribution_bucket="terraform-deployments",
               attendees_table="attendees-datastore", input_queue="attendee-input-queue", project_name="clams",
-              region="us-east-1", environment="nonprod", mode="plan"):
+              region="us-east-1", environment="nonprod", lambdas="yes", frontend="yes", mode="plan"):
     if mode not in ['init','plan', 'apply', 'destroy']:
         print("No action to take.  Try passing --mode init|plan|apply|destroy")
         exit(-1)
 
-    if mode == 'apply':
+    if mode == 'apply' and lambdas == 'yes':
         build_lambdas()
 
     bucket = '{account_number}-{distribution_bucket}' \
