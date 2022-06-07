@@ -11,6 +11,7 @@ A personal learning project using a connection to a legacy event management syst
 * SQS
 * CloudFront
 * Route53
+* CloudWatch
 
 ## Architecture
 
