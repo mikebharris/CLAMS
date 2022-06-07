@@ -4,11 +4,14 @@ import (
 	"attendees-api/storage"
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 )
+
+var headers = map[string]string{
+	"Content-Type": "application/json",
+}
 
 type Handler struct {
 	attendees storage.Attendees
@@ -24,19 +27,18 @@ func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayPr
 	} else {
 		attendees, err = h.attendees.FetchAllAttendees(ctx)
 	}
-
 	if err != nil {
-		log.Println(err)
-		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, nil
+		return events.APIGatewayProxyResponse{}, err
 	}
 
 	if len(attendees.Attendees) == 0 {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusNotFound}, nil
 	}
 
-	m, _ := json.Marshal(attendees)
-	headers := map[string]string{
-		"Content-Type": "application/json",
+	m, err := json.Marshal(attendees)
+	if err != nil {
+		return events.APIGatewayProxyResponse{}, err
 	}
+
 	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: string(m)}, nil
 }

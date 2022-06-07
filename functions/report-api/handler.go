@@ -3,12 +3,15 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"report-api/storage"
 
 	"github.com/aws/aws-lambda-go/events"
 )
+
+var headers = map[string]string{
+	"Content-Type": "application/json",
+}
 
 type Handler struct {
 	attendees storage.AttendeesDataStore
@@ -37,8 +40,7 @@ func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayPr
 
 	attendees, err := h.attendees.FetchAllAttendees(ctx)
 	if err != nil {
-		log.Println(err)
-		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, nil
+		return events.APIGatewayProxyResponse{}, err
 	}
 
 	numberOfAttendees := len(attendees)
@@ -59,9 +61,10 @@ func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayPr
 		report.TotalKids += a.NumberOfKids
 	}
 
-	m, _ := json.Marshal(report)
-	headers := map[string]string{
-		"Content-Type": "application/json",
+	m, err := json.Marshal(report)
+	if err != nil {
+		return events.APIGatewayProxyResponse{}, err
 	}
+
 	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: string(m)}, nil
 }

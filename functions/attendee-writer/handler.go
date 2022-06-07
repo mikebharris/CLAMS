@@ -63,7 +63,7 @@ func (h *handler) handleMessage(ctx context.Context, message events.SQSMessage) 
 		Financials: storage.Financials{
 			AmountToPay: m.AmountToPay,
 			AmountPaid:  m.AmountPaid,
-			AmountDue:   int(m.AmountToPay - m.AmountPaid),
+			AmountDue:   m.AmountToPay - m.AmountPaid,
 			DatePaid:    m.DatePaid,
 		},
 		ArrivalDay:     m.ArrivalDay,
@@ -95,7 +95,7 @@ func (h *handler) jsonToMessageObject(message events.SQSMessage) (*Message, erro
 }
 
 func (h *handler) computeNights(arrival string, stayingLate string) int {
-	var nights int = 1
+	var nights = 1
 
 	switch arrival {
 	case "Wednesday":
