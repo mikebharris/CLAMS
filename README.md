@@ -2,13 +2,15 @@
 
 _CLAMS => "BAMS in the Cloud"_
 
-A personal learning project using a connection to a legacy event management system as a way of illustrating serverless architectures using Go, Python, Fabric and Terraform.  CLAMS so far employs the following AWS services:
+A personal learning project using a connection to a legacy event management system as a way of illustrating serverless architectures using Go, Python, Fabric, Svelte and Terraform.  CLAMS so far employs the following AWS services:
 
 * API Gateway
 * DynamoDB
 * Lambda
 * S3
 * SQS
+* CloudFront
+* Route53
 
 ## Architecture
 
@@ -82,7 +84,5 @@ Options:
 
 # TODO list
 
-* Write a decent front-end
+* Write a better front-end
 * Add authentication to the API
-* Put behind CloudFront
-* Add provisioning for DNS hostname in Route53
