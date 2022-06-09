@@ -50,20 +50,16 @@ func (a *AttendeesDataStore) FetchAllAttendees(ctx context.Context) ([]Attendee,
 
 	var attendees []Attendee
 	for _, r := range records.Items {
-		attendee, err := a.toAttendee(r)
-		if err != nil {
-			continue
-		}
-		attendees = append(attendees, attendee)
+		attendees = append(attendees, a.toAttendee(r))
 	}
 
 	return attendees, nil
 }
 
-func (a *AttendeesDataStore) toAttendee(record map[string]types.AttributeValue) (Attendee, error) {
+func (a *AttendeesDataStore) toAttendee(record map[string]types.AttributeValue) Attendee {
 	var attendee Attendee
 	if err := attributevalue.UnmarshalMap(record, &attendee); err != nil {
-		return Attendee{}, fmt.Errorf("marshaling records %v to Attendee{} failed with error: %v", a, err)
+		return Attendee{}
 	}
-	return attendee, nil
+	return attendee
 }

@@ -61,10 +61,7 @@ func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayPr
 		report.TotalKids += a.NumberOfKids
 	}
 
-	m, err := json.Marshal(report)
-	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
-	}
+	m, _ := json.Marshal(report)
 
 	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: string(m)}, nil
 }
