@@ -98,11 +98,11 @@ func (h *handler) computeNights(arrival string, stayingLate string) int {
 	var nights = 1
 
 	switch arrival {
-	case "Wednesday":
+	case "Wed":
 		nights = 4
-	case "Thursday":
+	case "Thu":
 		nights = 3
-	case "Friday":
+	case "Fri":
 		nights = 2
 	}
 

@@ -41,7 +41,7 @@ resource "aws_dynamodb_table_item" "attendees_golden_data" {
       "S" : "Yes"
     },
     "ArrivalDay": {
-      "S": "Wednesday"
+      "S": "Wed"
     }
     "NumberOfNights": {
       "N": "5"
