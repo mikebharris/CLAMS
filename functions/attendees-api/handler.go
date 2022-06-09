@@ -35,10 +35,7 @@ func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayPr
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusNotFound}, nil
 	}
 
-	m, err := json.Marshal(attendees)
-	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
-	}
+	m, _ := json.Marshal(attendees)
 
 	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: string(m)}, nil
 }

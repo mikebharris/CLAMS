@@ -56,7 +56,7 @@ func (a *Attendees) FetchAttendee(ctx context.Context, authCode string) (*ApiRes
 	}
 
 	var attendees ApiResponse
-	attendee, err := a.toAttendee(record.Item)
+	attendee := a.toAttendee(record.Item)
 	if err != nil {
 		return nil, fmt.Errorf("marshaling record %v to Attendee{} failed with error: %v", a, err)
 	}
@@ -79,20 +79,16 @@ func (a *Attendees) FetchAllAttendees(ctx context.Context) (*ApiResponse, error)
 
 	var attendees ApiResponse
 	for _, r := range records.Items {
-		attendee, err := a.toAttendee(r)
-		if err != nil {
-			continue
-		}
-		attendees.Attendees = append(attendees.Attendees, attendee)
+		attendees.Attendees = append(attendees.Attendees, a.toAttendee(r))
 	}
 
 	return &attendees, nil
 }
 
-func (a *Attendees) toAttendee(record map[string]types.AttributeValue) (Attendee, error) {
+func (a *Attendees) toAttendee(record map[string]types.AttributeValue) Attendee {
 	var attendee Attendee
 	if err := attributevalue.UnmarshalMap(record, &attendee); err != nil {
-		return Attendee{}, fmt.Errorf("marshaling records %v to Attendee{} failed with error: %v", a, err)
+		return Attendee{}
 	}
-	return attendee, nil
+	return attendee
 }

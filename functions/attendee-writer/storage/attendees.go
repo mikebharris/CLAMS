@@ -35,11 +35,8 @@ type Attendees struct {
 }
 
 func (a *Attendees) Store(ctx context.Context, attendee Attendee) error {
-	marshalMap, err := attributevalue.MarshalMap(attendee)
-	if err != nil {
-		return err
-	}
-	_, err = a.Db.PutItem(ctx,
+	marshalMap, _ := attributevalue.MarshalMap(attendee)
+	_, err := a.Db.PutItem(ctx,
 		&dynamodb.PutItemInput{
 			Item:      marshalMap,
 			TableName: aws.String(a.Table),
