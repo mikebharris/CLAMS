@@ -53,6 +53,11 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
         build_and_deploy_frontend()
 
 
+@task
+def frontend(context):
+    build_and_deploy_frontend()
+
+
 def build_and_deploy_frontend():
     api_url = get_api_url()
     with do_in_directory('frontend'):
