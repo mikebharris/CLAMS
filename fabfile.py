@@ -84,6 +84,7 @@ def remove_local_terraform_state_files_to_prevent_deploying_in_wrong_environment
 
 
 def build_frontend(api_url: str):
+    print("Building frontend using API url {api_url}...".format(api_url=api_url))
     local('API_GATEWAY_URL={api_url} npm run build'.format(api_url=api_url))
 
 
