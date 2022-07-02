@@ -65,7 +65,7 @@ def build_and_deploy_frontend():
     deploy_frontend()
 
 
-def get_api_url():
+def get_api_url() -> str:
     with do_in_directory('terraform'):
         result = local('terraform output')
         search = re.search("(https.*)", result.stdout)
@@ -106,9 +106,9 @@ def deploy_frontend():
 
 
 @contextlib.contextmanager
-def do_in_directory(path):
+def do_in_directory(directory: str):
     CWD = os.getcwd()
-    os.chdir(path)
+    os.chdir(directory)
     try:
         yield
     finally:
