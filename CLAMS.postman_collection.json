@@ -15,7 +15,7 @@
 					"raw": "https://[path.to.api-gateway.uri]/clams/report",
 					"protocol": "https",
 					"host": [
-						"6cqh5d5fua",
+						"",
 						"execute-api",
 						"us-east-1",
 						"amazonaws",
@@ -38,7 +38,7 @@
 					"raw": "https://[path.to.api-gateway.uri]/clams/attendees",
 					"protocol": "https",
 					"host": [
-						"livxn9u893",
+						"",
 						"execute-api",
 						"us-east-1",
 						"amazonaws",
@@ -61,7 +61,7 @@
 					"raw": "https://[path.to.api-gateway.uri]/clams/attendee/5F7BCD",
 					"protocol": "https",
 					"host": [
-						"livxn9u893",
+						"",
 						"execute-api",
 						"us-east-1",
 						"amazonaws",
