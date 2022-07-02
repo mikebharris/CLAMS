@@ -50,15 +50,22 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
         local(command)
 
     if mode == 'apply' and frontend == 'yes':
-        with do_in_directory('terraform'):
-            result = local('terraform output')
-            search = re.search("(https.*)", result.stdout)
-            api_url = search.group(0)[:len(search.group(0))-1]
+        build_and_deploy_frontend()
 
-        with do_in_directory('frontend'):
-            build_frontend(api_url)
 
-        deploy_frontend()
+def build_and_deploy_frontend():
+    api_url = get_api_url()
+    with do_in_directory('frontend'):
+        build_frontend(api_url)
+    deploy_frontend()
+
+
+def get_api_url():
+    with do_in_directory('terraform'):
+        result = local('terraform output')
+        search = re.search("(https.*)", result.stdout)
+        api_url = search.group(0)[:len(search.group(0)) - 1]
+    return api_url
 
 
 def build_lambdas():
@@ -85,7 +92,8 @@ def remove_local_terraform_state_files_to_prevent_deploying_in_wrong_environment
 
 def build_frontend(api_url: str):
     print("Building frontend using API url {api_url}...".format(api_url=api_url))
-    local('API_GATEWAY_URL={api_url} npm run build'.format(api_url=api_url))
+    local('echo API_GATEWAY_URL={api_url}>.env'.format(api_url=api_url))
+    local('npm run build')
 
 
 def deploy_frontend():
