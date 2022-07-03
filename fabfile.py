@@ -69,7 +69,7 @@ def get_api_url() -> str:
     with do_in_directory('terraform'):
         result = local('terraform output')
         search = re.search("(https.*)", result.stdout)
-        api_url = search.group(0)[:len(search.group(0)) - 1]
+        api_url = '{host}/clams'.format(host=search.group(0)[:len(search.group(0)) - 1])
     return api_url
 
 
