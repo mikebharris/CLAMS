@@ -41,6 +41,18 @@ To run the service tests, change to the service in the _functions_ directory and
 AWS_SECRET_ACCESS_KEY=x AWS_ACCESS_KEY_ID=y make int-test
 ```
 
+There are unit tests than can be run, again by changing to the service in the _functions_ directory and typing:
+
+```shell
+make unit-test
+```
+
+You can run both unit and integration/service tests for a given service with:
+
+```shell
+make test
+```
+
 # Deploying
 
 There is a Python Fabric 2 script to help you do this.  First authenticate with AWS, either using a SSO integration tool such as XXXX, or by fetching your credentials from IAM.
