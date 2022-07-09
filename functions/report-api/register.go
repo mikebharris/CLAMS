@@ -1,4 +1,4 @@
-package storage
+package main
 
 import (
 	"context"
@@ -31,16 +31,20 @@ type Financials struct {
 	DatePaid    string `json:"DatePaid"`
 }
 
-type AttendeesDatastore interface {
-	FetchAllAttendees(ctx context.Context) ([]Attendee, error)
+type Register interface {
+	Attendees(ctx context.Context) ([]Attendee, error)
 }
 
-type DynamoAttendeesDataStore struct {
-	Db    *dynamodb.Client
+type DatastoreInterface interface {
+	Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error)
+}
+
+type DynamoDbDatastore struct {
+	Db    DatastoreInterface
 	Table string
 }
 
-func (a *DynamoAttendeesDataStore) FetchAllAttendees(ctx context.Context) ([]Attendee, error) {
+func (a *DynamoDbDatastore) Attendees(ctx context.Context) ([]Attendee, error) {
 	records, err := a.Db.Scan(ctx, &dynamodb.ScanInput{
 		TableName: aws.String(a.Table),
 	})
@@ -60,7 +64,7 @@ func (a *DynamoAttendeesDataStore) FetchAllAttendees(ctx context.Context) ([]Att
 	return attendees, nil
 }
 
-func (a *DynamoAttendeesDataStore) toAttendee(record map[string]types.AttributeValue) Attendee {
+func (a *DynamoDbDatastore) toAttendee(record map[string]types.AttributeValue) Attendee {
 	var attendee Attendee
 	if err := attributevalue.UnmarshalMap(record, &attendee); err != nil {
 		return Attendee{}

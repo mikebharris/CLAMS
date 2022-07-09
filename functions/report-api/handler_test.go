@@ -8,37 +8,37 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/http"
-	"report-api/storage"
 	"testing"
 	"time"
 )
 
-type MockAttendeesDatastore struct {
+type MockRegister struct {
 	mock.Mock
 }
 
-func (fs *MockAttendeesDatastore) FetchAllAttendees(ctx context.Context) ([]storage.Attendee, error) {
+func (fs *MockRegister) Attendees(ctx context.Context) ([]Attendee, error) {
 	args := fs.Called()
-	return args.Get(0).([]storage.Attendee), args.Error(1)
+	return args.Get(0).([]Attendee), args.Error(1)
 }
 
 func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 	// Given
-	mockAttendeesDatastore := MockAttendeesDatastore{}
+	mockAttendeesDatastore := MockRegister{}
 
-	attendees := []storage.Attendee{{
-		AuthCode:       "12345",
-		Name:           "Bob Storey-Day",
-		Email:          "",
-		Telephone:      "",
-		NumberOfKids:   1,
-		Diet:           "",
-		Financials:     storage.Financials{},
-		ArrivalDay:     "",
-		NumberOfNights: 3,
-		StayingLate:    "",
-		CreatedTime:    time.Time{},
-	},
+	attendees := []Attendee{
+		{
+			AuthCode:       "12345",
+			Name:           "Bob Storey-Day",
+			Email:          "",
+			Telephone:      "",
+			NumberOfKids:   1,
+			Diet:           "",
+			Financials:     Financials{},
+			ArrivalDay:     "",
+			NumberOfNights: 3,
+			StayingLate:    "",
+			CreatedTime:    time.Time{},
+		},
 		{
 			AuthCode:       "23456",
 			Name:           "Craig",
@@ -46,7 +46,7 @@ func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 			Telephone:      "",
 			NumberOfKids:   1,
 			Diet:           "",
-			Financials:     storage.Financials{},
+			Financials:     Financials{},
 			ArrivalDay:     "",
 			NumberOfNights: 3,
 			StayingLate:    "",
@@ -54,8 +54,8 @@ func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 		},
 	}
 
-	mockAttendeesDatastore.On("FetchAllAttendees").Return(attendees, nil)
-	handler := Handler{attendeesDatastore: &mockAttendeesDatastore}
+	mockAttendeesDatastore.On("Attendees").Return(attendees, nil)
+	handler := Handler{register: &mockAttendeesDatastore}
 
 	// When
 	response, err := handler.Handle(context.Background(), events.APIGatewayProxyRequest{})
@@ -85,9 +85,9 @@ func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 
 func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 	// Given
-	mockAttendeesDatastore := MockAttendeesDatastore{}
-	mockAttendeesDatastore.On("FetchAllAttendees").Return([]storage.Attendee{}, nil)
-	handler := Handler{attendeesDatastore: &mockAttendeesDatastore}
+	mockAttendeesDatastore := MockRegister{}
+	mockAttendeesDatastore.On("Attendees").Return([]Attendee{}, nil)
+	handler := Handler{register: &mockAttendeesDatastore}
 
 	// When
 	response, err := handler.Handle(context.Background(), events.APIGatewayProxyRequest{})
@@ -99,9 +99,9 @@ func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 
 func Test_shouldReturnErrorWhenUnableToFetchAttendees(t *testing.T) {
 	// Given
-	mockAttendeesDatastore := MockAttendeesDatastore{}
-	mockAttendeesDatastore.On("FetchAllAttendees").Return([]storage.Attendee{}, fmt.Errorf("some error"))
-	handler := Handler{attendeesDatastore: &mockAttendeesDatastore}
+	mockAttendeesDatastore := MockRegister{}
+	mockAttendeesDatastore.On("Attendees").Return([]Attendee{}, fmt.Errorf("some error"))
+	handler := Handler{register: &mockAttendeesDatastore}
 
 	// When
 	response, err := handler.Handle(context.Background(), events.APIGatewayProxyRequest{})

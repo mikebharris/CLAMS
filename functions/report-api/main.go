@@ -2,20 +2,18 @@ package main
 
 import (
 	"context"
-	"os"
-	"report-api/storage"
-
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"os"
 )
 
 func main() {
 	cfg := newConfig()
 
 	lambdaHandler := Handler{
-		attendeesDatastore: &storage.DynamoAttendeesDataStore{
+		register: &DynamoDbDatastore{
 			Db:    dynamodb.NewFromConfig(cfg),
 			Table: os.Getenv("ATTENDEES_TABLE_NAME"),
 		},
@@ -32,8 +30,8 @@ func newConfig() aws.Config {
 	}
 
 	if len(dynamoEndpointOverride) > 0 {
-		defaultEndpointResolver := cfg.EndpointResolver
-		cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+		defaultEndpointResolver := cfg.EndpointResolverWithOptions
+		cfg.EndpointResolverWithOptions = aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 			if service == dynamodb.ServiceID && len(dynamoEndpointOverride) > 0 {
 				return aws.Endpoint{URL: dynamoEndpointOverride}, nil
 			}
