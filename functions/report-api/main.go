@@ -15,12 +15,12 @@ func main() {
 	cfg := newConfig()
 
 	lambdaHandler := Handler{
-		attendees: storage.AttendeesDataStore{
+		attendeesDatastore: &storage.DynamoAttendeesDataStore{
 			Db:    dynamodb.NewFromConfig(cfg),
 			Table: os.Getenv("ATTENDEES_TABLE_NAME"),
 		},
 	}
-	lambda.Start(lambdaHandler.HandleRequest)
+	lambda.Start(lambdaHandler.Handle)
 }
 
 func newConfig() aws.Config {

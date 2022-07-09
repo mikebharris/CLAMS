@@ -14,7 +14,7 @@ var headers = map[string]string{
 }
 
 type Handler struct {
-	attendees storage.AttendeesDataStore
+	attendeesDatastore storage.AttendeesDatastore
 }
 
 type Day string
@@ -36,11 +36,11 @@ type Report struct {
 	DailyHeadCounts       []HeadCount
 }
 
-func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (h *Handler) Handle(ctx context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
-	attendees, err := h.attendees.FetchAllAttendees(ctx)
+	attendees, err := h.attendeesDatastore.FetchAllAttendees(ctx)
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, err
 	}
 
 	numberOfAttendees := len(attendees)

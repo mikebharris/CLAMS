@@ -31,12 +31,16 @@ type Financials struct {
 	DatePaid    string `json:"DatePaid"`
 }
 
-type AttendeesDataStore struct {
+type AttendeesDatastore interface {
+	FetchAllAttendees(ctx context.Context) ([]Attendee, error)
+}
+
+type DynamoAttendeesDataStore struct {
 	Db    *dynamodb.Client
 	Table string
 }
 
-func (a *AttendeesDataStore) FetchAllAttendees(ctx context.Context) ([]Attendee, error) {
+func (a *DynamoAttendeesDataStore) FetchAllAttendees(ctx context.Context) ([]Attendee, error) {
 	records, err := a.Db.Scan(ctx, &dynamodb.ScanInput{
 		TableName: aws.String(a.Table),
 	})
@@ -56,7 +60,7 @@ func (a *AttendeesDataStore) FetchAllAttendees(ctx context.Context) ([]Attendee,
 	return attendees, nil
 }
 
-func (a *AttendeesDataStore) toAttendee(record map[string]types.AttributeValue) Attendee {
+func (a *DynamoAttendeesDataStore) toAttendee(record map[string]types.AttributeValue) Attendee {
 	var attendee Attendee
 	if err := attributevalue.UnmarshalMap(record, &attendee); err != nil {
 		return Attendee{}
