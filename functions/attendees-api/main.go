@@ -1,7 +1,6 @@
 package main
 
 import (
-	"attendees-api/storage"
 	"context"
 	"os"
 
@@ -15,7 +14,7 @@ func main() {
 	cfg := newConfig()
 
 	lambdaHandler := Handler{
-		attendees: storage.Attendees{
+		attendees: Attendees{
 			Db:    dynamodb.NewFromConfig(cfg),
 			Table: os.Getenv("ATTENDEES_TABLE_NAME"),
 		},

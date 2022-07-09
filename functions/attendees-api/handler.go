@@ -1,7 +1,6 @@
 package main
 
 import (
-	"attendees-api/storage"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -14,11 +13,11 @@ var headers = map[string]string{
 }
 
 type Handler struct {
-	attendees storage.Attendees
+	attendees Attendees
 }
 
 func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var attendees *storage.ApiResponse
+	var attendees *ApiResponse
 	var err error
 
 	authCode := request.PathParameters["authCode"]
