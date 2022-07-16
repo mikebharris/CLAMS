@@ -35,12 +35,17 @@ type Financials struct {
 	DatePaid    string `json:"DatePaid"`
 }
 
-type Attendees struct {
-	Db    *dynamodb.Client
+type DatastoreInterface interface {
+	Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error)
+	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
+}
+
+type Register struct {
+	Db    DatastoreInterface
 	Table string
 }
 
-func (a *Attendees) FetchAttendee(ctx context.Context, authCode string) (*ApiResponse, error) {
+func (a *Register) AttendeesWithAuthCode(ctx context.Context, authCode string) (*ApiResponse, error) {
 	record, err := a.Db.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(a.Table),
 		Key: map[string]types.AttributeValue{
@@ -65,7 +70,7 @@ func (a *Attendees) FetchAttendee(ctx context.Context, authCode string) (*ApiRes
 	return &attendees, nil
 }
 
-func (a *Attendees) FetchAllAttendees(ctx context.Context) (*ApiResponse, error) {
+func (a *Register) Attendees(ctx context.Context) (*ApiResponse, error) {
 	records, err := a.Db.Scan(ctx, &dynamodb.ScanInput{
 		TableName: aws.String(a.Table),
 	})
@@ -85,7 +90,7 @@ func (a *Attendees) FetchAllAttendees(ctx context.Context) (*ApiResponse, error)
 	return &attendees, nil
 }
 
-func (a *Attendees) toAttendee(record map[string]types.AttributeValue) Attendee {
+func (a *Register) toAttendee(record map[string]types.AttributeValue) Attendee {
 	var attendee Attendee
 	if err := attributevalue.UnmarshalMap(record, &attendee); err != nil {
 		return Attendee{}

@@ -14,7 +14,7 @@ func main() {
 	cfg := newConfig()
 
 	lambdaHandler := Handler{
-		attendees: Attendees{
+		register: &Register{
 			Db:    dynamodb.NewFromConfig(cfg),
 			Table: os.Getenv("ATTENDEES_TABLE_NAME"),
 		},
