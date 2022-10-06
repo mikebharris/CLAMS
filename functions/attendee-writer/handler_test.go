@@ -27,7 +27,7 @@ func Test_handleRequest_ShouldProcessSingleMessage(t *testing.T) {
 	mp := MockMessageProcessor{}
 	mp.On("processMessage", ctx, msg).Return(nil)
 
-	h := handler{
+	h := Handler{
 		messageProcessor: &mp,
 	}
 
@@ -51,7 +51,7 @@ func Test_handleRequest_ShouldProcessMultipleMessages(t *testing.T) {
 	mp.On("processMessage", ctx, msg1).Return(nil)
 	mp.On("processMessage", ctx, msg2).Return(nil)
 
-	h := handler{
+	h := Handler{
 		messageProcessor: &mp,
 	}
 
@@ -75,7 +75,7 @@ func Test_handleRequest_ShouldReturnSliceOfFailedMessages(t *testing.T) {
 	mp.On("processMessage", ctx, msg1).Return(nil)
 	mp.On("processMessage", ctx, msg2).Return(errors.New("cannot process message"))
 
-	h := handler{
+	h := Handler{
 		messageProcessor: &mp,
 	}
 

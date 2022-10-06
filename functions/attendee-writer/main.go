@@ -11,9 +11,9 @@ const (
 	awsRegion = "us-east-1"
 )
 
-type clock struct{}
+type Clock struct{}
 
-func (clock) Now() time.Time { return time.Now() }
+func (Clock) Now() time.Time { return time.Now() }
 
 func main() {
 	awsConfig, err := newAwsConfig()
@@ -21,13 +21,13 @@ func main() {
 		panic(err)
 	}
 
-	lambdaHandler := handler{
-		messageProcessor: messageProcessor{
-			attendeesStore: attendeesStore{
+	lambdaHandler := Handler{
+		messageProcessor: MessageProcessor{
+			attendeesStore: AttendeesStore{
 				Db:    dynamodb.NewFromConfig(*awsConfig),
 				Table: os.Getenv("ATTENDEES_TABLE_NAME"),
 			},
-			clock: clock{},
+			clock: Clock{},
 		},
 	}
 

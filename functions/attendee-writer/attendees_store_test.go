@@ -24,13 +24,13 @@ func TestAttendees_ShouldPutItemInDynamoDbWhenStoreIsCalled(t *testing.T) {
 	// Given
 	ctx := context.Background()
 
-	attendee := attendee{}
+	attendee := Attendee{}
 	marshalMap, _ := attributevalue.MarshalMap(attendee)
 
 	dynamoClient := MockDynamoClient{}
 	dynamoClient.On("PutItem", ctx, mock.Anything).Return(&dynamodb.PutItemOutput{}, nil)
 
-	store := attendeesStore{Db: &dynamoClient, Table: "some-table"}
+	store := AttendeesStore{Db: &dynamoClient, Table: "some-table"}
 
 	// When
 	err := store.Store(ctx, attendee)
@@ -51,10 +51,10 @@ func TestAttendees_ShouldReturnErrorIfUnableToPutItemInDynamoDB(t *testing.T) {
 	dynamoClient := MockDynamoClient{}
 	dynamoClient.On("PutItem", ctx, mock.Anything).Return(&dynamodb.PutItemOutput{}, fmt.Errorf("some dynamo error"))
 
-	store := attendeesStore{Db: &dynamoClient, Table: "some-table"}
+	store := AttendeesStore{Db: &dynamoClient, Table: "some-table"}
 
 	// When
-	err := store.Store(ctx, attendee{})
+	err := store.Store(ctx, Attendee{})
 
 	// Then
 	assert.NotNil(t, err)

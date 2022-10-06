@@ -25,11 +25,11 @@ type IMessageProcessor interface {
 	processMessage(ctx context.Context, message events.SQSMessage) error
 }
 
-type handler struct {
+type Handler struct {
 	messageProcessor IMessageProcessor
 }
 
-func (h *handler) handleRequest(ctx context.Context, sqsEvent events.SQSEvent) (events.SQSEventResponse, error) {
+func (h *Handler) handleRequest(ctx context.Context, sqsEvent events.SQSEvent) (events.SQSEventResponse, error) {
 	if len(sqsEvent.Records) == 0 {
 		return events.SQSEventResponse{}, errors.New("sqs event contained no records")
 	}
