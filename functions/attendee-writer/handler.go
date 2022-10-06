@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -97,13 +98,16 @@ func (h *handler) jsonToMessageObject(message events.SQSMessage) (*Message, erro
 func (h *handler) computeNights(arrival string, stayingLate string) int {
 	var nights = 1
 
-	switch arrival {
-	case "Wed":
+	if strings.Contains(arrival, "Wednesday") {
 		nights = 4
-	case "Thu":
+	} else if strings.Contains(arrival, "Thursday") {
 		nights = 3
-	case "Fri":
+	} else if strings.Contains(arrival, "Friday") {
 		nights = 2
+	} else if strings.Contains(arrival, "Saturday") {
+		nights = 1
+	} else {
+		nights = 5
 	}
 
 	if stayingLate == "Yes" {
