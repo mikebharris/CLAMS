@@ -38,7 +38,6 @@ func (h Handler) handleRequest(ctx context.Context, sqsEvent events.SQSEvent) (e
 	for _, message := range sqsEvent.Records {
 		log.Printf("processing a message with id %s for event source %s\n", message.MessageId, message.EventSource)
 		if err := h.messageProcessor.processMessage(ctx, message); err != nil {
-			log.Printf("handling error: %v", err)
 			batchItemFailures = append(batchItemFailures, events.SQSBatchItemFailure{ItemIdentifier: message.MessageId})
 		}
 	}
