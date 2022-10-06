@@ -22,8 +22,8 @@ func main() {
 	}
 
 	lambdaHandler := handler{
-		messageProcessor: MessageProcessor{
-			attendees: &AttendeesStore{
+		messageProcessor: messageProcessor{
+			attendeesStore: attendeesStore{
 				Db:    dynamodb.NewFromConfig(*awsConfig),
 				Table: os.Getenv("ATTENDEES_TABLE_NAME"),
 			},

@@ -26,7 +26,6 @@ type IMessageProcessor interface {
 }
 
 type handler struct {
-	attendees        AttendeesStore
 	messageProcessor IMessageProcessor
 }
 

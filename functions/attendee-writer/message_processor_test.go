@@ -15,7 +15,7 @@ type MockAttendeesStore struct {
 	mock.Mock
 }
 
-func (s *MockAttendeesStore) Store(ctx context.Context, attendee Attendee) error {
+func (s *MockAttendeesStore) Store(ctx context.Context, attendee attendee) error {
 	args := s.Called(ctx, attendee)
 	return args.Error(0)
 }
@@ -38,14 +38,14 @@ func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	mockClock.On("Now").Return(now)
 
 	mockAttendeesStore := MockAttendeesStore{}
-	attendee := Attendee{
+	attendee := attendee{
 		AuthCode:     "123456",
 		Name:         "Frank Ostrowski",
 		Email:        "frank.o@gfa.de",
 		Telephone:    "123456789",
 		NumberOfKids: 1,
 		Diet:         "I eat BASIC code for lunch",
-		Financials: Financials{
+		Financials: financials{
 			DatePaid:    "29/05/2022",
 			AmountPaid:  75,
 			AmountToPay: 75,
@@ -57,7 +57,7 @@ func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	}
 	mockAttendeesStore.On("Store", ctx, attendee).Return(nil)
 
-	mp := MessageProcessor{attendees: &mockAttendeesStore, clock: mockClock}
+	mp := messageProcessor{attendeesStore: &mockAttendeesStore, clock: mockClock}
 
 	message := Message{
 		Name:         "Frank Ostrowski",
@@ -93,7 +93,7 @@ func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
 	mockAttendeesStore := MockAttendeesStore{}
 	mockAttendeesStore.On("Store", ctx, mock.Anything).Return(fmt.Errorf("some storage error"))
 
-	mp := MessageProcessor{attendees: &mockAttendeesStore, clock: mockClock}
+	mp := messageProcessor{attendeesStore: &mockAttendeesStore, clock: mockClock}
 
 	message := Message{
 		Name:         "Frank Ostrowski",
@@ -126,7 +126,7 @@ func Test_processMessage_ShouldReturnErrorIfUnableToParseMessage(t *testing.T) {
 	mockAttendeesStore := MockAttendeesStore{}
 	mockClock := MockClock{}
 
-	mp := MessageProcessor{attendees: &mockAttendeesStore, clock: &mockClock}
+	mp := messageProcessor{attendeesStore: &mockAttendeesStore, clock: &mockClock}
 
 	// When
 	err := mp.processMessage(ctx, events.SQSMessage{Body: ""})
@@ -199,7 +199,7 @@ func Test_handler_computeNights(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mp := &MessageProcessor{}
+			mp := &messageProcessor{}
 			if got := mp.computeNights(tt.args.arrival, tt.args.stayingLate); got != tt.want {
 				t.Errorf("computeNights() = %v, want %v", got, tt.want)
 			}

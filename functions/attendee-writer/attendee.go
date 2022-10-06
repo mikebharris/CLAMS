@@ -2,21 +2,21 @@ package main
 
 import "time"
 
-type Attendee struct {
+type attendee struct {
 	AuthCode       string
 	Name           string
 	Email          string
 	Telephone      string
 	NumberOfKids   int
 	Diet           string
-	Financials     Financials
+	Financials     financials
 	ArrivalDay     string
 	NumberOfNights int
 	StayingLate    string
 	CreatedTime    time.Time
 }
 
-type Financials struct {
+type financials struct {
 	AmountToPay int    `json:"AmountToPay"`
 	AmountPaid  int    `json:"AmountPaid"`
 	AmountDue   int    `json:"AmountDue"`

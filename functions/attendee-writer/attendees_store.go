@@ -12,12 +12,12 @@ type IDynamoClient interface {
 	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
 }
 
-type AttendeesStore struct {
+type attendeesStore struct {
 	Db    IDynamoClient
 	Table string
 }
 
-func (a *AttendeesStore) Store(ctx context.Context, attendee Attendee) error {
+func (a attendeesStore) Store(ctx context.Context, attendee attendee) error {
 	marshalMap, _ := attributevalue.MarshalMap(attendee)
 	_, err := a.Db.PutItem(ctx,
 		&dynamodb.PutItemInput{
