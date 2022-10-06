@@ -1,78 +1,89 @@
 package main
 
 import (
-	"attendee-writer/storage"
+	"context"
+	"errors"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"testing"
 )
 
-func Test_handler_computeNights(t *testing.T) {
-	type fields struct {
-		attendees storage.Attendees
+type MockMessageProcessor struct {
+	mock.Mock
+}
+
+func (mp *MockMessageProcessor) processMessage(ctx context.Context, message events.SQSMessage) error {
+	args := mp.Called(ctx, message)
+	return args.Error(0)
+}
+
+func Test_handleRequest_ShouldProcessSingleMessage(t *testing.T) {
+	// Given
+	ctx := context.Background()
+
+	msg := events.SQSMessage{MessageId: "abcdef"}
+
+	mp := MockMessageProcessor{}
+	mp.On("processMessage", ctx, msg).Return(nil)
+
+	h := handler{
+		messageProcessor: &mp,
 	}
-	type args struct {
-		arrival     string
-		stayingLate string
+
+	// When
+	request, err := h.handleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{msg}})
+
+	// Then
+	assert.Nil(t, err)
+	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: nil}, request)
+	mp.AssertNumberOfCalls(t, "processMessage", 1)
+}
+
+func Test_handleRequest_ShouldProcessMultipleMessages(t *testing.T) {
+	// Given
+	ctx := context.Background()
+
+	msg1 := events.SQSMessage{MessageId: "abcdef"}
+	msg2 := events.SQSMessage{MessageId: "123456"}
+
+	mp := MockMessageProcessor{}
+	mp.On("processMessage", ctx, msg1).Return(nil)
+	mp.On("processMessage", ctx, msg2).Return(nil)
+
+	h := handler{
+		messageProcessor: &mp,
 	}
-	tests := []struct {
-		name string
-		args args
-		want int
-	}{
-		{
-			name: "Should report 4 days if arriving Wednesday and not staying late",
-			args: args{
-				arrival:     "Wednesday AM",
-				stayingLate: "No",
-			},
-			want: 4,
-		},
-		{
-			name: "Should report 3 days if arriving Thursday and not staying late",
-			args: args{
-				arrival:     "Thursday PM",
-				stayingLate: "No",
-			},
-			want: 3,
-		},
-		{
-			name: "Should report 2 days if arriving Friday and not staying late",
-			args: args{
-				arrival:     "Friday AM",
-				stayingLate: "No",
-			},
-			want: 2,
-		},
-		{
-			name: "Should report 1 day if arriving Saturday and not staying late",
-			args: args{
-				arrival:     "Saturday",
-				stayingLate: "No",
-			},
-			want: 1,
-		},
-		{
-			name: "Should report 3 days if arriving Friday and staying late",
-			args: args{
-				arrival:     "Friday",
-				stayingLate: "Yes",
-			},
-			want: 3,
-		},
-		{
-			name: "Should default to five days if unknown number of nights",
-			args: args{
-				arrival:     "Miércoles",
-				stayingLate: "No",
-			},
-			want: 5,
-		},
+
+	// When
+	request, err := h.handleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{msg1, msg2}})
+
+	// Then
+	assert.Nil(t, err)
+	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: nil}, request)
+	mp.AssertNumberOfCalls(t, "processMessage", 2)
+}
+
+func Test_handleRequest_ShouldReturnSliceOfFailedMessages(t *testing.T) {
+	// Given
+	ctx := context.Background()
+
+	msg1 := events.SQSMessage{MessageId: "fedcba"}
+	msg2 := events.SQSMessage{MessageId: "654321"}
+
+	mp := MockMessageProcessor{}
+	mp.On("processMessage", ctx, msg1).Return(nil)
+	mp.On("processMessage", ctx, msg2).Return(errors.New("cannot process message"))
+
+	h := handler{
+		messageProcessor: &mp,
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &handler{}
-			if got := h.computeNights(tt.args.arrival, tt.args.stayingLate); got != tt.want {
-				t.Errorf("computeNights() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+
+	// When
+	request, err := h.handleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{msg1, msg2}})
+
+	// Then
+	assert.Nil(t, err)
+	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: []events.SQSBatchItemFailure{{ItemIdentifier: msg2.MessageId}}}, request)
+	mp.AssertNumberOfCalls(t, "processMessage", 2)
 }

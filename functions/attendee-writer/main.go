@@ -1,49 +1,35 @@
 package main
 
 import (
-	"attendee-writer/storage"
-	"context"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"os"
+	"time"
 )
 
 const (
 	awsRegion = "us-east-1"
 )
 
+type clock struct{}
+
+func (clock) Now() time.Time { return time.Now() }
+
 func main() {
-	cfg := newConfig()
-
-	lambdaHandler := handler{
-		attendees: storage.Attendees{
-			Db:    dynamodb.NewFromConfig(cfg),
-			Table: os.Getenv("ATTENDEES_TABLE_NAME"),
-		},
-	}
-
-	lambda.Start(lambdaHandler.handleRequest)
-}
-
-func newConfig() aws.Config {
-	dynamoEndpointOverride := os.Getenv("DYNAMO_ENDPOINT_OVERRIDE")
-
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(awsRegion))
+	awsConfig, err := newAwsConfig()
 	if err != nil {
 		panic(err)
 	}
 
-	if len(dynamoEndpointOverride) > 0 {
-		defaultEndpointResolver := cfg.EndpointResolver
-		cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-			if service == dynamodb.ServiceID && len(dynamoEndpointOverride) > 0 {
-				return aws.Endpoint{URL: dynamoEndpointOverride}, nil
-			}
-			return defaultEndpointResolver.ResolveEndpoint(service, region)
-		})
+	lambdaHandler := handler{
+		messageProcessor: MessageProcessor{
+			attendees: &AttendeesStore{
+				Db:    dynamodb.NewFromConfig(*awsConfig),
+				Table: os.Getenv("ATTENDEES_TABLE_NAME"),
+			},
+			clock: clock{},
+		},
 	}
 
-	return cfg
+	lambda.Start(lambdaHandler.handleRequest)
 }
