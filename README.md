@@ -13,6 +13,10 @@ A personal learning project using a connection to a [legacy event management sys
 * Route53
 * CloudWatch
 
+## More
+
+This is primarily a project for me to learn Go to establish and understand patterns for writing service and unit tests.
+
 ## Architecture
 
 ![The architecture of CLAMS](CLAMS-architecture.png)
