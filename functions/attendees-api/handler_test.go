@@ -16,13 +16,13 @@ type MockRegister struct {
 	mock.Mock
 }
 
-func (r *MockRegister) Attendees(ctx context.Context) (*ApiResponse, error) {
-	args := r.Called()
+func (r *MockRegister) GetAllAttendees(ctx context.Context) (*ApiResponse, error) {
+	args := r.Called(ctx)
 	return args.Get(0).(*ApiResponse), args.Error(1)
 }
 
-func (r *MockRegister) AttendeesWithAuthCode(ctx context.Context, authCode string) (*ApiResponse, error) {
-	args := r.Called()
+func (r *MockRegister) GetAttendeesWithAuthCode(ctx context.Context, authCode string) (*ApiResponse, error) {
+	args := r.Called(ctx, authCode)
 	return args.Get(0).(*ApiResponse), args.Error(1)
 }
 
@@ -59,19 +59,21 @@ func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
 		},
 	}
 
-	mockRegister.On("Attendees").Return(&ApiResponse{Attendees: attendees}, nil)
-	handler := Handler{register: &mockRegister}
+	ctx := context.Background()
+	mockRegister.On("GetAllAttendees", ctx).Return(&ApiResponse{Attendees: attendees}, nil)
+	handler := Handler{attendeesStore: &mockRegister}
 
 	// When
-	response, err := handler.HandleRequest(context.Background(), events.APIGatewayProxyRequest{})
-	fmt.Println(response)
+	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
 
 	// Then
 	headers := map[string]string{"Content-Type": "application/json"}
 	m, _ := json.Marshal(attendees)
-	body := fmt.Sprintf("{\"AttendeesWithAuthCode\":%s}", m)
+	body := fmt.Sprintf("{\"Attendees\":%s}", m)
 	assert.Equal(t, events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: body}, response)
 	assert.Nil(t, err)
+
+	mockRegister.AssertCalled(t, "GetAllAttendees", ctx)
 }
 
 func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
@@ -94,28 +96,32 @@ func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
 		},
 	}
 
-	mockRegister.On("AttendeesWithAuthCode").Return(&ApiResponse{Attendees: attendees}, nil)
-	handler := Handler{register: &mockRegister}
+	ctx := context.Background()
+	mockRegister.On("GetAttendeesWithAuthCode", ctx, "12345").Return(&ApiResponse{Attendees: attendees}, nil)
+	handler := Handler{attendeesStore: &mockRegister}
 
 	// When
-	response, err := handler.HandleRequest(context.Background(), events.APIGatewayProxyRequest{PathParameters: map[string]string{"authCode": "12345"}})
+	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{PathParameters: map[string]string{"authCode": "12345"}})
 
 	// Then
 	headers := map[string]string{"Content-Type": "application/json"}
 	m, _ := json.Marshal(attendees)
-	body := fmt.Sprintf("{\"AttendeesWithAuthCode\":%s}", m)
+	body := fmt.Sprintf("{\"Attendees\":%s}", m)
 	assert.Equal(t, events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: body}, response)
 	assert.Nil(t, err)
+
+	mockRegister.AssertCalled(t, "GetAttendeesWithAuthCode", ctx, "12345")
 }
 
 func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 	// Given
 	mockRegister := MockRegister{}
-	mockRegister.On("Attendees").Return(&ApiResponse{Attendees: []Attendee{}}, nil)
-	handler := Handler{register: &mockRegister}
+	ctx := context.Background()
+	mockRegister.On("GetAllAttendees", ctx).Return(&ApiResponse{Attendees: []Attendee{}}, nil)
+	handler := Handler{attendeesStore: &mockRegister}
 
 	// When
-	response, err := handler.HandleRequest(context.Background(), events.APIGatewayProxyRequest{})
+	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
 
 	// Then
 	assert.Nil(t, err)
@@ -125,11 +131,12 @@ func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 func Test_shouldReturnErrorWhenUnableToFetchAttendees(t *testing.T) {
 	// Given
 	mockAttendeesDatastore := MockRegister{}
-	mockAttendeesDatastore.On("Attendees").Return(&ApiResponse{}, fmt.Errorf("some error"))
-	handler := Handler{register: &mockAttendeesDatastore}
+	ctx := context.Background()
+	mockAttendeesDatastore.On("GetAllAttendees", ctx).Return(&ApiResponse{}, fmt.Errorf("some error"))
+	handler := Handler{attendeesStore: &mockAttendeesDatastore}
 
 	// When
-	response, err := handler.HandleRequest(context.Background(), events.APIGatewayProxyRequest{})
+	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
 
 	// Then
 	assert.Equal(t, fmt.Errorf("some error"), err)

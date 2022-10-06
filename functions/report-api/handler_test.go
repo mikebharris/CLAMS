@@ -12,18 +12,18 @@ import (
 	"time"
 )
 
-type MockRegister struct {
+type MockAttendeesStore struct {
 	mock.Mock
 }
 
-func (fs *MockRegister) Attendees(ctx context.Context) ([]Attendee, error) {
-	args := fs.Called()
+func (fs MockAttendeesStore) GetAllAttendees(ctx context.Context) ([]Attendee, error) {
+	args := fs.Called(ctx)
 	return args.Get(0).([]Attendee), args.Error(1)
 }
 
 func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 	// Given
-	mockAttendeesDatastore := MockRegister{}
+	mockAttendeesStore := MockAttendeesStore{}
 
 	attendees := []Attendee{
 		{
@@ -54,11 +54,12 @@ func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 		},
 	}
 
-	mockAttendeesDatastore.On("Attendees").Return(attendees, nil)
-	handler := Handler{register: &mockAttendeesDatastore}
+	ctx := context.Background()
+	mockAttendeesStore.On("GetAllAttendees", ctx).Return(attendees, nil)
+	handler := Handler{attendeesStore: mockAttendeesStore}
 
 	// When
-	response, err := handler.Handle(context.Background(), events.APIGatewayProxyRequest{})
+	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
 	fmt.Println(response)
 
 	// Then
@@ -85,12 +86,12 @@ func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 
 func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 	// Given
-	mockAttendeesDatastore := MockRegister{}
-	mockAttendeesDatastore.On("Attendees").Return([]Attendee{}, nil)
-	handler := Handler{register: &mockAttendeesDatastore}
+	mockAttendeesDatastore := MockAttendeesStore{}
+	mockAttendeesDatastore.On("GetAllAttendees", mock.Anything).Return([]Attendee{}, nil)
+	handler := Handler{attendeesStore: &mockAttendeesDatastore}
 
 	// When
-	response, err := handler.Handle(context.Background(), events.APIGatewayProxyRequest{})
+	response, err := handler.HandleRequest(context.Background(), events.APIGatewayProxyRequest{})
 
 	// Then
 	assert.Nil(t, err)
@@ -99,12 +100,12 @@ func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 
 func Test_shouldReturnErrorWhenUnableToFetchAttendees(t *testing.T) {
 	// Given
-	mockAttendeesDatastore := MockRegister{}
-	mockAttendeesDatastore.On("Attendees").Return([]Attendee{}, fmt.Errorf("some error"))
-	handler := Handler{register: &mockAttendeesDatastore}
+	mockAttendeesDatastore := MockAttendeesStore{}
+	mockAttendeesDatastore.On("GetAllAttendees", mock.Anything).Return([]Attendee{}, fmt.Errorf("some error"))
+	handler := Handler{attendeesStore: &mockAttendeesDatastore}
 
 	// When
-	response, err := handler.Handle(context.Background(), events.APIGatewayProxyRequest{})
+	response, err := handler.HandleRequest(context.Background(), events.APIGatewayProxyRequest{})
 
 	// Then
 	assert.Equal(t, fmt.Errorf("some error"), err)

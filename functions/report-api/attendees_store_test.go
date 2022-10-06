@@ -27,13 +27,13 @@ func Test_shouldReturnAttendees(t *testing.T) {
 			Items: []map[string]types.AttributeValue{{"AuthCode": &types.AttributeValueMemberS{Value: "12345"}}},
 		}, nil)
 
-	datastore := DynamoDbDatastore{
+	datastore := AttendeesStore{
 		Db:    &mockDynamoClient,
 		Table: "some-table",
 	}
 
 	// When
-	attendees, err := datastore.Attendees(context.Background())
+	attendees, err := datastore.GetAllAttendees(context.Background())
 
 	// Then
 	assert.Nil(t, err)
@@ -49,10 +49,10 @@ func Test_shouldReturnNoAttendeesWhenUnableToScanDynamoDB(t *testing.T) {
 		On("Scan", mock.Anything).
 		Return(&dynamodb.ScanOutput{}, fmt.Errorf("some dynamo error"))
 
-	datastore := DynamoDbDatastore{Db: &mockDynamoClient}
+	datastore := AttendeesStore{Db: &mockDynamoClient}
 
 	// When
-	returnedAttendees, err := datastore.Attendees(context.Background())
+	returnedAttendees, err := datastore.GetAllAttendees(context.Background())
 
 	// Then
 	assert.Equal(t, fmt.Errorf("fetching attendees from DynamoDB: some dynamo error"), err)
@@ -66,10 +66,10 @@ func Test_shouldReturnNoAttendeesWhenThereAreNoneInTheDatastore(t *testing.T) {
 		On("Scan", mock.Anything).
 		Return(&dynamodb.ScanOutput{}, nil)
 
-	datastore := DynamoDbDatastore{Db: &mockDynamoClient}
+	datastore := AttendeesStore{Db: &mockDynamoClient}
 
 	// When
-	returnedAttendees, err := datastore.Attendees(context.Background())
+	returnedAttendees, err := datastore.GetAllAttendees(context.Background())
 
 	// Then
 	assert.Nil(t, err)

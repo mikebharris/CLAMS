@@ -7,44 +7,22 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"time"
 )
 
-type Attendee struct {
-	AuthCode       string
-	Name           string
-	Email          string
-	Telephone      string
-	NumberOfKids   int
-	Diet           string
-	Financials     Financials
-	ArrivalDay     string
-	NumberOfNights int
-	StayingLate    string
-	CreatedTime    time.Time
-}
-
-type Financials struct {
-	AmountToPay int    `json:"AmountToPay"`
-	AmountPaid  int    `json:"AmountPaid"`
-	AmountDue   int    `json:"AmountDue"`
-	DatePaid    string `json:"DatePaid"`
-}
-
-type Register interface {
-	Attendees(ctx context.Context) ([]Attendee, error)
+type AttendeesStoreInterface interface {
+	GetAllAttendees(ctx context.Context) ([]Attendee, error)
 }
 
 type DatastoreInterface interface {
 	Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error)
 }
 
-type DynamoDbDatastore struct {
+type AttendeesStore struct {
 	Db    DatastoreInterface
 	Table string
 }
 
-func (a *DynamoDbDatastore) Attendees(ctx context.Context) ([]Attendee, error) {
+func (a AttendeesStore) GetAllAttendees(ctx context.Context) ([]Attendee, error) {
 	records, err := a.Db.Scan(ctx, &dynamodb.ScanInput{
 		TableName: aws.String(a.Table),
 	})
@@ -64,7 +42,7 @@ func (a *DynamoDbDatastore) Attendees(ctx context.Context) ([]Attendee, error) {
 	return attendees, nil
 }
 
-func (a *DynamoDbDatastore) toAttendee(record map[string]types.AttributeValue) Attendee {
+func (a AttendeesStore) toAttendee(record map[string]types.AttributeValue) Attendee {
 	var attendee Attendee
 	if err := attributevalue.UnmarshalMap(record, &attendee); err != nil {
 		return Attendee{}

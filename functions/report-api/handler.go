@@ -12,30 +12,11 @@ var headers = map[string]string{
 }
 
 type Handler struct {
-	register Register
+	attendeesStore AttendeesStoreInterface
 }
 
-type Day string
-
-type HeadCount struct {
-	Day   Day
-	Count int
-}
-
-type Report struct {
-	TotalAttendees        int
-	TotalKids             int
-	TotalNightsCamped     int
-	TotalCampingCharge    int
-	TotalPaid             int
-	TotalToPay            int
-	TotalIncome           int
-	AveragePaidByAttendee int
-	DailyHeadCounts       []HeadCount
-}
-
-func (h *Handler) Handle(ctx context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	attendees, err := h.register.Attendees(ctx)
+func (h Handler) HandleRequest(ctx context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	attendees, err := h.attendeesStore.GetAllAttendees(ctx)
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, err
 	}

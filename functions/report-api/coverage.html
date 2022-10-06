@@ -55,11 +55,11 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">report-api/handler.go (100.0%)</option>
+				<option value="file0">report-api/attendees_store.go (92.3%)</option>
 				
-				<option value="file1">report-api/main.go (0.0%)</option>
+				<option value="file1">report-api/handler.go (100.0%)</option>
 				
-				<option value="file2">report-api/register.go (92.3%)</option>
+				<option value="file2">report-api/main.go (0.0%)</option>
 				
 				</select>
 			</div>
@@ -77,6 +77,59 @@
 
 import (
         "context"
+        "fmt"
+        "github.com/aws/aws-sdk-go-v2/aws"
+        "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+        "github.com/aws/aws-sdk-go-v2/service/dynamodb"
+        "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+)
+
+type AttendeesStoreInterface interface {
+        GetAllAttendees(ctx context.Context) ([]Attendee, error)
+}
+
+type DatastoreInterface interface {
+        Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error)
+}
+
+type AttendeesStore struct {
+        Db    DatastoreInterface
+        Table string
+}
+
+func (a AttendeesStore) GetAllAttendees(ctx context.Context) ([]Attendee, error) <span class="cov8" title="1">{
+        records, err := a.Db.Scan(ctx, &amp;dynamodb.ScanInput{
+                TableName: aws.String(a.Table),
+        })
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("fetching attendees from DynamoDB: %v", err)
+        }</span>
+
+        <span class="cov8" title="1">if len(records.Items) == 0 </span><span class="cov8" title="1">{
+                return nil, nil
+        }</span>
+
+        <span class="cov8" title="1">var attendees []Attendee
+        for _, r := range records.Items </span><span class="cov8" title="1">{
+                attendees = append(attendees, a.toAttendee(r))
+        }</span>
+
+        <span class="cov8" title="1">return attendees, nil</span>
+}
+
+func (a AttendeesStore) toAttendee(record map[string]types.AttributeValue) Attendee <span class="cov8" title="1">{
+        var attendee Attendee
+        if err := attributevalue.UnmarshalMap(record, &amp;attendee); err != nil </span><span class="cov0" title="0">{
+                return Attendee{}
+        }</span>
+        <span class="cov8" title="1">return attendee</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package main
+
+import (
+        "context"
         "encoding/json"
         "github.com/aws/aws-lambda-go/events"
         "net/http"
@@ -87,30 +140,11 @@ var headers = map[string]string{
 }
 
 type Handler struct {
-        register Register
+        attendeesStore AttendeesStoreInterface
 }
 
-type Day string
-
-type HeadCount struct {
-        Day   Day
-        Count int
-}
-
-type Report struct {
-        TotalAttendees        int
-        TotalKids             int
-        TotalNightsCamped     int
-        TotalCampingCharge    int
-        TotalPaid             int
-        TotalToPay            int
-        TotalIncome           int
-        AveragePaidByAttendee int
-        DailyHeadCounts       []HeadCount
-}
-
-func (h *Handler) Handle(ctx context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) <span class="cov8" title="1">{
-        attendees, err := h.register.Attendees(ctx)
+func (h Handler) HandleRequest(ctx context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) <span class="cov8" title="1">{
+        attendees, err := h.attendeesStore.GetAllAttendees(ctx)
         if err != nil </span><span class="cov8" title="1">{
                 return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, err
         }</span>
@@ -139,7 +173,7 @@ func (h *Handler) Handle(ctx context.Context, _ events.APIGatewayProxyRequest) (
 }
 </pre>
 		
-		<pre class="file" id="file1" style="display: none">package main
+		<pre class="file" id="file2" style="display: none">package main
 
 import (
         "context"
@@ -154,12 +188,12 @@ func main() <span class="cov0" title="0">{
         cfg := newConfig()
 
         lambdaHandler := Handler{
-                register: &amp;DynamoDbDatastore{
+                attendeesStore: AttendeesStore{
                         Db:    dynamodb.NewFromConfig(cfg),
                         Table: os.Getenv("ATTENDEES_TABLE_NAME"),
                 },
         }
-        lambda.Start(lambdaHandler.Handle)
+        lambda.Start(lambdaHandler.HandleRequest)
 }</span>
 
 func newConfig() aws.Config <span class="cov0" title="0">{
@@ -181,81 +215,6 @@ func newConfig() aws.Config <span class="cov0" title="0">{
         }
 
         <span class="cov0" title="0">return cfg</span>
-}
-</pre>
-		
-		<pre class="file" id="file2" style="display: none">package main
-
-import (
-        "context"
-        "fmt"
-        "github.com/aws/aws-sdk-go-v2/aws"
-        "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
-        "github.com/aws/aws-sdk-go-v2/service/dynamodb"
-        "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-        "time"
-)
-
-type Attendee struct {
-        AuthCode       string
-        Name           string
-        Email          string
-        Telephone      string
-        NumberOfKids   int
-        Diet           string
-        Financials     Financials
-        ArrivalDay     string
-        NumberOfNights int
-        StayingLate    string
-        CreatedTime    time.Time
-}
-
-type Financials struct {
-        AmountToPay int    `json:"AmountToPay"`
-        AmountPaid  int    `json:"AmountPaid"`
-        AmountDue   int    `json:"AmountDue"`
-        DatePaid    string `json:"DatePaid"`
-}
-
-type Register interface {
-        Attendees(ctx context.Context) ([]Attendee, error)
-}
-
-type DatastoreInterface interface {
-        Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error)
-}
-
-type DynamoDbDatastore struct {
-        Db    DatastoreInterface
-        Table string
-}
-
-func (a *DynamoDbDatastore) Attendees(ctx context.Context) ([]Attendee, error) <span class="cov8" title="1">{
-        records, err := a.Db.Scan(ctx, &amp;dynamodb.ScanInput{
-                TableName: aws.String(a.Table),
-        })
-        if err != nil </span><span class="cov8" title="1">{
-                return nil, fmt.Errorf("fetching attendees from DynamoDB: %v", err)
-        }</span>
-
-        <span class="cov8" title="1">if len(records.Items) == 0 </span><span class="cov8" title="1">{
-                return nil, nil
-        }</span>
-
-        <span class="cov8" title="1">var attendees []Attendee
-        for _, r := range records.Items </span><span class="cov8" title="1">{
-                attendees = append(attendees, a.toAttendee(r))
-        }</span>
-
-        <span class="cov8" title="1">return attendees, nil</span>
-}
-
-func (a *DynamoDbDatastore) toAttendee(record map[string]types.AttributeValue) Attendee <span class="cov8" title="1">{
-        var attendee Attendee
-        if err := attributevalue.UnmarshalMap(record, &amp;attendee); err != nil </span><span class="cov0" title="0">{
-                return Attendee{}
-        }</span>
-        <span class="cov8" title="1">return attendee</span>
 }
 </pre>
 		

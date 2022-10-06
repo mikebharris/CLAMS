@@ -12,25 +12,26 @@ var headers = map[string]string{
 	"Content-Type": "application/json",
 }
 
-type RegisterInterface interface {
-	Attendees(ctx context.Context) (*ApiResponse, error)
-	AttendeesWithAuthCode(ctx context.Context, authCode string) (*ApiResponse, error)
+type AttendeesStoreInterface interface {
+	GetAllAttendees(ctx context.Context) (*ApiResponse, error)
+	GetAttendeesWithAuthCode(ctx context.Context, authCode string) (*ApiResponse, error)
 }
 
 type Handler struct {
-	register RegisterInterface
+	attendeesStore AttendeesStoreInterface
 }
 
-func (h *Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (h Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var attendees *ApiResponse
 	var err error
 
 	authCode := request.PathParameters["authCode"]
 	if authCode != "" {
-		attendees, err = h.register.AttendeesWithAuthCode(ctx, authCode)
+		attendees, err = h.attendeesStore.GetAttendeesWithAuthCode(ctx, authCode)
 	} else {
-		attendees, err = h.register.Attendees(ctx)
+		attendees, err = h.attendeesStore.GetAllAttendees(ctx)
 	}
+
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
