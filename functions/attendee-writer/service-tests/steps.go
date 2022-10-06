@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/stretchr/testify/assert"
-
 	"net/http"
+
 	"testing"
 
 	"github.com/cucumber/godog"
@@ -76,6 +76,74 @@ func (s *steps) stopContainers(ctx context.Context, sc *godog.Scenario, err erro
 	return ctx, err
 }
 
+func (s *steps) theAttendeeWriterIsInvokedWithANewAttendeeRecord() error {
+	request := Message{
+		Name:         "Frank Ostrowski",
+		Email:        "frank.o@gfa.de",
+		AuthCode:     "123456",
+		AmountToPay:  75,
+		AmountPaid:   50,
+		DatePaid:     "28/05/2022",
+		Telephone:    "123456789",
+		ArrivalDay:   "Wednesday",
+		Diet:         "I eat BASIC code for lunch",
+		StayingLate:  "Yes",
+		NumberOfKids: 1,
+	}
+
+	return s.theLambdaIsInvoked(request)
+}
+
+func (s *steps) theAttendeeWriterIsInvokedWithAnUpdatedAttendeeRecord() error {
+	request := Message{
+		Name:         "Frank Ostrowski",
+		Email:        "frank.o@gfa.de",
+		AuthCode:     "123456",
+		AmountToPay:  75,
+		AmountPaid:   75,
+		DatePaid:     "29/05/2022",
+		Telephone:    "123456789",
+		ArrivalDay:   "Wednesday",
+		Diet:         "I eat BASIC code for lunch",
+		StayingLate:  "No",
+		NumberOfKids: 1,
+	}
+	return s.theLambdaIsInvoked(request)
+}
+
+func (s *steps) theLambdaIsInvoked(payload Message) error {
+	localLambdaInvocationPort, err := s.containers.GetLocalHostLambdaPort()
+	if err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf("http://localhost:%d/2015-03-31/functions/myfunction/invocations", localLambdaInvocationPort)
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		panic(err)
+	}
+
+	request := events.SQSEvent{Records: []events.SQSMessage{{Body: string(body)}}}
+	requestJsonBytes, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
+
+	response, err := http.Post(url, "application/json", bytes.NewReader(requestJsonBytes))
+	if err != nil {
+		return err
+	}
+	if response.StatusCode != 200 {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(response.Body)
+		body := buf.String()
+		return fmt.Errorf("invoking Lambda: %d %s", response.StatusCode, body)
+	}
+
+	return nil
+}
+
 func (s *steps) theAttendeeIsAddedToTheAttendeesDatastore() error {
 	attendee, err := s.DynamoClient.getAttendeeByCode("123456")
 	if err != nil {
@@ -120,72 +188,4 @@ func (s *steps) theAttendeeIsUpdatedInTheAttendeesDatastore() error {
 	assert.Equal(s.t, "Wednesday", attendee.ArrivalDay)
 
 	return nil
-}
-
-func (s *steps) theLambdaIsInvoked(payload Message) error {
-	localLambdaInvocationPort, err := s.containers.GetLocalHostLambdaPort()
-	if err != nil {
-		return err
-	}
-
-	url := fmt.Sprintf("http://localhost:%d/2015-03-31/functions/myfunction/invocations", localLambdaInvocationPort)
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		panic(err)
-	}
-
-	request := events.SQSEvent{Records: []events.SQSMessage{{Body: string(body)}}}
-	requestJsonBytes, err := json.Marshal(request)
-	if err != nil {
-		return err
-	}
-
-	response, err := http.Post(url, "application/json", bytes.NewReader(requestJsonBytes))
-	if err != nil {
-		return err
-	}
-	if response.StatusCode != 200 {
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(response.Body)
-		body := buf.String()
-		return fmt.Errorf("invoking Lambda: %d %s", response.StatusCode, body)
-	}
-
-	return nil
-}
-
-func (s *steps) theAttendeeWriterIsInvokedWithANewAttendeeRecord() error {
-	request := Message{
-		Name:         "Frank Ostrowski",
-		Email:        "frank.o@gfa.de",
-		AuthCode:     "123456",
-		AmountToPay:  75,
-		AmountPaid:   50,
-		DatePaid:     "28/05/2022",
-		Telephone:    "123456789",
-		ArrivalDay:   "Wednesday",
-		Diet:         "I eat BASIC code for lunch",
-		StayingLate:  "Yes",
-		NumberOfKids: 1,
-	}
-
-	return s.theLambdaIsInvoked(request)
-}
-
-func (s *steps) theAttendeeWriterIsInvokedWithAnUpdatedAttendeeRecord() error {
-	request := Message{
-		Name:         "Frank Ostrowski",
-		Email:        "frank.o@gfa.de",
-		AuthCode:     "123456",
-		AmountToPay:  75,
-		AmountPaid:   75,
-		DatePaid:     "29/05/2022",
-		Telephone:    "123456789",
-		ArrivalDay:   "Wednesday",
-		Diet:         "I eat BASIC code for lunch",
-		StayingLate:  "No",
-		NumberOfKids: 1,
-	}
-	return s.theLambdaIsInvoked(request)
 }
