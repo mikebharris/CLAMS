@@ -16,7 +16,7 @@ type Clock struct{}
 func (Clock) Now() time.Time { return time.Now() }
 
 func main() {
-	awsConfig, err := newAwsConfig()
+	awsConfig, err := newAwsConfig(awsRegion)
 	if err != nil {
 		panic(err)
 	}

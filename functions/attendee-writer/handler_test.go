@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -86,4 +87,26 @@ func Test_handleRequest_ShouldReturnSliceOfFailedMessages(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: []events.SQSBatchItemFailure{{ItemIdentifier: msg2.MessageId}}}, request)
 	mp.AssertNumberOfCalls(t, "processMessage", 2)
+}
+
+func Test_handleRequest_ShouldReturnErrorIfThereSqsEventContainsNoMessages(t *testing.T) {
+	// Given
+	ctx := context.Background()
+
+	msg := events.SQSMessage{MessageId: "abcdef"}
+
+	mp := MockMessageProcessor{}
+	mp.On("processMessage", ctx, msg).Return(nil)
+
+	h := Handler{
+		messageProcessor: &mp,
+	}
+
+	// When
+	_, err := h.handleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{}})
+
+	// Then
+	assert.NotNil(t, err)
+	assert.Equal(t, fmt.Errorf("sqs event contained no records"), err)
+	mp.AssertNotCalled(t, "processMessage")
 }

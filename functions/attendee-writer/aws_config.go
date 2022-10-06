@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func newAwsConfig() (*aws.Config, error) {
+func newAwsConfig(awsRegion string) (*aws.Config, error) {
 	dynamoEndpointOverride := os.Getenv("DYNAMO_ENDPOINT_OVERRIDE")
 
 	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(awsRegion))
