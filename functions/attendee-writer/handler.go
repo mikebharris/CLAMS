@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/aws/aws-lambda-go/events"
-	"log"
+	"sync"
 )
 
 type Message struct {
@@ -34,12 +34,28 @@ func (h Handler) handleRequest(ctx context.Context, sqsEvent events.SQSEvent) (e
 		return events.SQSEventResponse{}, errors.New("sqs event contained no records")
 	}
 
+	var wg sync.WaitGroup
+	failedEventChan := make(chan events.SQSMessage)
+
+	for _, record := range sqsEvent.Records {
+		wg.Add(1)
+		sqsMessage := record
+		go func() {
+			defer wg.Done()
+			if err := h.messageProcessor.processMessage(ctx, sqsMessage); err != nil {
+				failedEventChan <- sqsMessage
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(failedEventChan)
+	}()
+
 	var batchItemFailures []events.SQSBatchItemFailure
-	for _, message := range sqsEvent.Records {
-		log.Printf("processing a message with id %s for event source %s\n", message.MessageId, message.EventSource)
-		if err := h.messageProcessor.processMessage(ctx, message); err != nil {
-			batchItemFailures = append(batchItemFailures, events.SQSBatchItemFailure{ItemIdentifier: message.MessageId})
-		}
+	for i := range failedEventChan {
+		batchItemFailures = append(batchItemFailures, events.SQSBatchItemFailure{ItemIdentifier: i.MessageId})
 	}
 
 	return events.SQSEventResponse{BatchItemFailures: batchItemFailures}, nil

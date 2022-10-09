@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"log"
 	"time"
 )
 
@@ -20,12 +21,14 @@ type MessageProcessor struct {
 	clock          IClock
 }
 
-func (mp MessageProcessor) processMessage(ctx context.Context, message events.SQSMessage) error {
+func (mp MessageProcessor) processMessage(ctx context.Context, msg events.SQSMessage) error {
 	attendeeFactory := AttendeeFactory{mp.clock}
-	attendee, err := attendeeFactory.NewFromMessage(message)
+	attendee, err := attendeeFactory.NewFromMessage(msg)
 	if err != nil {
 		return err
 	}
+
+	log.Printf("processing a message with id %s for event source %s\nattendee = %v", msg.MessageId, msg.EventSource, attendee)
 
 	if err := mp.attendeesStore.Store(ctx, attendee); err != nil {
 		return fmt.Errorf("storing attendee in datastore: %v", err)
