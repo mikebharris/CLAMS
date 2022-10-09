@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"os"
 	"time"
@@ -21,7 +22,11 @@ func main() {
 		panic(err)
 	}
 
-	lambdaHandler := Handler{
+	lambda.Start(newDefaultHandler(awsConfig).handleRequest)
+}
+
+func newDefaultHandler(awsConfig *aws.Config) Handler {
+	return Handler{
 		messageProcessor: MessageProcessor{
 			attendeesStore: AttendeesStore{
 				Db:    dynamodb.NewFromConfig(*awsConfig),
@@ -30,6 +35,4 @@ func main() {
 			clock: Clock{},
 		},
 	}
-
-	lambda.Start(lambdaHandler.handleRequest)
 }
