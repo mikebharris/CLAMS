@@ -1,6 +1,7 @@
-package main
+package messages
 
 import (
+	"attendee-writer/attendee"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,7 +16,7 @@ type MockAttendeesStore struct {
 	mock.Mock
 }
 
-func (s *MockAttendeesStore) Store(ctx context.Context, attendee Attendee) error {
+func (s *MockAttendeesStore) Store(ctx context.Context, attendee attendee.Attendee) error {
 	args := s.Called(ctx, attendee)
 	return args.Error(0)
 }
@@ -38,14 +39,14 @@ func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	mockClock.On("Now").Return(now)
 
 	mockAttendeesStore := MockAttendeesStore{}
-	attendee := Attendee{
+	attendee := attendee.Attendee{
 		AuthCode:     "123456",
 		Name:         "Frank Ostrowski",
 		Email:        "frank.o@gfa.de",
 		Telephone:    "123456789",
 		NumberOfKids: 1,
 		Diet:         "I eat BASIC code for lunch",
-		Financials: Financials{
+		Financials: attendee.Financials{
 			DatePaid:    "29/05/2022",
 			AmountPaid:  75,
 			AmountToPay: 75,
@@ -57,7 +58,7 @@ func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	}
 	mockAttendeesStore.On("Store", ctx, attendee).Return(nil)
 
-	mp := MessageProcessor{attendeesStore: &mockAttendeesStore, clock: mockClock}
+	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore, Clock: mockClock}
 
 	message := Message{
 		Name:         "Frank Ostrowski",
@@ -75,7 +76,7 @@ func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	body, _ := json.Marshal(message)
 
 	// When
-	err := mp.processMessage(ctx, events.SQSMessage{Body: string(body)})
+	err := mp.ProcessMessage(ctx, events.SQSMessage{Body: string(body)})
 
 	// Then
 	assert.Nil(t, err)
@@ -93,7 +94,7 @@ func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
 	mockAttendeesStore := MockAttendeesStore{}
 	mockAttendeesStore.On("Store", ctx, mock.Anything).Return(fmt.Errorf("some storage error"))
 
-	mp := MessageProcessor{attendeesStore: &mockAttendeesStore, clock: mockClock}
+	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore, Clock: mockClock}
 
 	message := Message{
 		Name:         "Frank Ostrowski",
@@ -111,7 +112,7 @@ func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
 	body, _ := json.Marshal(message)
 
 	// When
-	err := mp.processMessage(ctx, events.SQSMessage{Body: string(body)})
+	err := mp.ProcessMessage(ctx, events.SQSMessage{Body: string(body)})
 
 	// Then
 	assert.NotNil(t, err)
@@ -126,10 +127,10 @@ func Test_processMessage_ShouldReturnErrorIfUnableToParseMessage(t *testing.T) {
 	mockAttendeesStore := MockAttendeesStore{}
 	mockClock := MockClock{}
 
-	mp := MessageProcessor{attendeesStore: &mockAttendeesStore, clock: &mockClock}
+	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore, Clock: &mockClock}
 
 	// When
-	err := mp.processMessage(ctx, events.SQSMessage{Body: ""})
+	err := mp.ProcessMessage(ctx, events.SQSMessage{Body: ""})
 
 	// Then
 	assert.NotNil(t, err)

@@ -1,30 +1,36 @@
-package main
+package messages
 
 import (
+	"attendee-writer/attendee"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"strings"
+	"time"
 )
 
-type AttendeeFactory struct {
-	clock IClock
+type IClock interface {
+	Now() time.Time
 }
 
-func (af AttendeeFactory) NewFromMessage(message events.SQSMessage) (Attendee, error) {
+type AttendeeFactory struct {
+	Clock IClock
+}
+
+func (af AttendeeFactory) NewFromMessage(message events.SQSMessage) (attendee.Attendee, error) {
 	msg, err := af.jsonToMessageObject(message)
 	if err != nil {
-		return Attendee{}, fmt.Errorf("reading message %v: %v", message, err)
+		return attendee.Attendee{}, fmt.Errorf("reading message %v: %v", message, err)
 	}
 
-	attendee := Attendee{
+	a := attendee.Attendee{
 		AuthCode:     msg.AuthCode,
 		Name:         msg.Name,
 		Email:        msg.Email,
 		Telephone:    msg.Telephone,
 		NumberOfKids: msg.NumberOfKids,
 		Diet:         msg.Diet,
-		Financials: Financials{
+		Financials: attendee.Financials{
 			AmountToPay: msg.AmountToPay,
 			AmountPaid:  msg.AmountPaid,
 			AmountDue:   msg.AmountToPay - msg.AmountPaid,
@@ -33,9 +39,9 @@ func (af AttendeeFactory) NewFromMessage(message events.SQSMessage) (Attendee, e
 		ArrivalDay:     msg.ArrivalDay,
 		NumberOfNights: af.computeNights(msg.ArrivalDay, msg.StayingLate),
 		StayingLate:    msg.StayingLate,
-		CreatedTime:    af.clock.Now(),
+		CreatedTime:    af.Clock.Now(),
 	}
-	return attendee, nil
+	return a, nil
 }
 
 func (af AttendeeFactory) jsonToMessageObject(message events.SQSMessage) (*Message, error) {

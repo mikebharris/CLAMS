@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -7,29 +7,15 @@ import (
 	"sync"
 )
 
-type Message struct {
-	AuthCode     string
-	Name         string
-	Email        string
-	AmountToPay  int
-	AmountPaid   int
-	DatePaid     string
-	Telephone    string
-	ArrivalDay   string
-	StayingLate  string
-	NumberOfKids int
-	Diet         string
-}
-
 type IMessageProcessor interface {
-	processMessage(ctx context.Context, message events.SQSMessage) error
+	ProcessMessage(ctx context.Context, message events.SQSMessage) error
 }
 
 type Handler struct {
-	messageProcessor IMessageProcessor
+	MessageProcessor IMessageProcessor
 }
 
-func (h Handler) handleRequest(ctx context.Context, sqsEvent events.SQSEvent) (events.SQSEventResponse, error) {
+func (h Handler) HandleRequest(ctx context.Context, sqsEvent events.SQSEvent) (events.SQSEventResponse, error) {
 	if len(sqsEvent.Records) == 0 {
 		return events.SQSEventResponse{}, errors.New("sqs event contained no records")
 	}
@@ -42,7 +28,7 @@ func (h Handler) handleRequest(ctx context.Context, sqsEvent events.SQSEvent) (e
 		sqsMessage := record
 		go func() {
 			defer wg.Done()
-			if err := h.messageProcessor.processMessage(ctx, sqsMessage); err != nil {
+			if err := h.MessageProcessor.ProcessMessage(ctx, sqsMessage); err != nil {
 				failedEventChan <- sqsMessage
 			}
 		}()

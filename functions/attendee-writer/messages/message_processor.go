@@ -1,28 +1,24 @@
-package main
+package messages
 
 import (
+	"attendee-writer/attendee"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"log"
-	"time"
 )
 
 type IAttendeesStore interface {
-	Store(ctx context.Context, attendee Attendee) error
-}
-
-type IClock interface {
-	Now() time.Time
+	Store(ctx context.Context, attendee attendee.Attendee) error
 }
 
 type MessageProcessor struct {
-	attendeesStore IAttendeesStore
-	clock          IClock
+	AttendeesStore IAttendeesStore
+	Clock          IClock
 }
 
-func (mp MessageProcessor) processMessage(ctx context.Context, msg events.SQSMessage) error {
-	attendeeFactory := AttendeeFactory{mp.clock}
+func (mp MessageProcessor) ProcessMessage(ctx context.Context, msg events.SQSMessage) error {
+	attendeeFactory := AttendeeFactory{Clock: mp.Clock}
 	attendee, err := attendeeFactory.NewFromMessage(msg)
 	if err != nil {
 		return err
@@ -30,7 +26,7 @@ func (mp MessageProcessor) processMessage(ctx context.Context, msg events.SQSMes
 
 	log.Printf("processing a message with id %s for event source %s\nattendee = %v", msg.MessageId, msg.EventSource, attendee)
 
-	if err := mp.attendeesStore.Store(ctx, attendee); err != nil {
+	if err := mp.AttendeesStore.Store(ctx, attendee); err != nil {
 		return fmt.Errorf("storing attendee in datastore: %v", err)
 	}
 

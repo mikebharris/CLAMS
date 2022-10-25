@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type MockMessageProcessor struct {
 	mock.Mock
 }
 
-func (mp *MockMessageProcessor) processMessage(ctx context.Context, message events.SQSMessage) error {
+func (mp *MockMessageProcessor) ProcessMessage(ctx context.Context, message events.SQSMessage) error {
 	args := mp.Called(ctx, message)
 	return args.Error(0)
 }
@@ -26,19 +26,19 @@ func Test_handleRequest_ShouldProcessSingleMessage(t *testing.T) {
 	msg := events.SQSMessage{MessageId: "abcdef"}
 
 	mp := MockMessageProcessor{}
-	mp.On("processMessage", ctx, msg).Return(nil)
+	mp.On("ProcessMessage", ctx, msg).Return(nil)
 
 	h := Handler{
-		messageProcessor: &mp,
+		MessageProcessor: &mp,
 	}
 
 	// When
-	request, err := h.handleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{msg}})
+	request, err := h.HandleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{msg}})
 
 	// Then
 	assert.Nil(t, err)
 	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: nil}, request)
-	mp.AssertNumberOfCalls(t, "processMessage", 1)
+	mp.AssertNumberOfCalls(t, "ProcessMessage", 1)
 }
 
 func Test_handleRequest_ShouldProcessMultipleMessages(t *testing.T) {
@@ -49,20 +49,20 @@ func Test_handleRequest_ShouldProcessMultipleMessages(t *testing.T) {
 	msg2 := events.SQSMessage{MessageId: "123456"}
 
 	mp := MockMessageProcessor{}
-	mp.On("processMessage", ctx, msg1).Return(nil)
-	mp.On("processMessage", ctx, msg2).Return(nil)
+	mp.On("ProcessMessage", ctx, msg1).Return(nil)
+	mp.On("ProcessMessage", ctx, msg2).Return(nil)
 
 	h := Handler{
-		messageProcessor: &mp,
+		MessageProcessor: &mp,
 	}
 
 	// When
-	request, err := h.handleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{msg1, msg2}})
+	request, err := h.HandleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{msg1, msg2}})
 
 	// Then
 	assert.Nil(t, err)
 	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: nil}, request)
-	mp.AssertNumberOfCalls(t, "processMessage", 2)
+	mp.AssertNumberOfCalls(t, "ProcessMessage", 2)
 }
 
 func Test_handleRequest_ShouldReturnSliceOfFailedMessages(t *testing.T) {
@@ -73,20 +73,20 @@ func Test_handleRequest_ShouldReturnSliceOfFailedMessages(t *testing.T) {
 	msg2 := events.SQSMessage{MessageId: "654321"}
 
 	mp := MockMessageProcessor{}
-	mp.On("processMessage", ctx, msg1).Return(nil)
-	mp.On("processMessage", ctx, msg2).Return(errors.New("cannot process message"))
+	mp.On("ProcessMessage", ctx, msg1).Return(nil)
+	mp.On("ProcessMessage", ctx, msg2).Return(errors.New("cannot process message"))
 
 	h := Handler{
-		messageProcessor: &mp,
+		MessageProcessor: &mp,
 	}
 
 	// When
-	request, err := h.handleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{msg1, msg2}})
+	request, err := h.HandleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{msg1, msg2}})
 
 	// Then
 	assert.Nil(t, err)
 	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: []events.SQSBatchItemFailure{{ItemIdentifier: msg2.MessageId}}}, request)
-	mp.AssertNumberOfCalls(t, "processMessage", 2)
+	mp.AssertNumberOfCalls(t, "ProcessMessage", 2)
 }
 
 func Test_handleRequest_ShouldReturnErrorIfThereSqsEventContainsNoMessages(t *testing.T) {
@@ -96,17 +96,17 @@ func Test_handleRequest_ShouldReturnErrorIfThereSqsEventContainsNoMessages(t *te
 	msg := events.SQSMessage{MessageId: "abcdef"}
 
 	mp := MockMessageProcessor{}
-	mp.On("processMessage", ctx, msg).Return(nil)
+	mp.On("ProcessMessage", ctx, msg).Return(nil)
 
 	h := Handler{
-		messageProcessor: &mp,
+		MessageProcessor: &mp,
 	}
 
 	// When
-	_, err := h.handleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{}})
+	_, err := h.HandleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{}})
 
 	// Then
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Errorf("sqs event contained no records"), err)
-	mp.AssertNotCalled(t, "processMessage")
+	mp.AssertNotCalled(t, "ProcessMessage")
 }
