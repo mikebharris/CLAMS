@@ -1,6 +1,8 @@
 package main
 
 import (
+	"attendees-api/attendee"
+	"attendees-api/handler"
 	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -13,8 +15,8 @@ func main() {
 		panic(err)
 	}
 
-	lambdaHandler := Handler{
-		attendeesStore: &AttendeesStore{
+	lambdaHandler := handler.Handler{
+		AttendeesStore: &attendee.AttendeesStore{
 			Db:    dynamodb.NewFromConfig(*awsConfig),
 			Table: os.Getenv("ATTENDEES_TABLE_NAME"),
 		},

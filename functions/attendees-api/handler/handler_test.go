@@ -1,6 +1,7 @@
-package main
+package handler
 
 import (
+	"attendees-api/attendee"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -16,21 +17,21 @@ type MockRegister struct {
 	mock.Mock
 }
 
-func (r *MockRegister) GetAllAttendees(ctx context.Context) (*ApiResponse, error) {
+func (r *MockRegister) GetAllAttendees(ctx context.Context) (*attendee.ApiResponse, error) {
 	args := r.Called(ctx)
-	return args.Get(0).(*ApiResponse), args.Error(1)
+	return args.Get(0).(*attendee.ApiResponse), args.Error(1)
 }
 
-func (r *MockRegister) GetAttendeesWithAuthCode(ctx context.Context, authCode string) (*ApiResponse, error) {
+func (r *MockRegister) GetAttendeesWithAuthCode(ctx context.Context, authCode string) (*attendee.ApiResponse, error) {
 	args := r.Called(ctx, authCode)
-	return args.Get(0).(*ApiResponse), args.Error(1)
+	return args.Get(0).(*attendee.ApiResponse), args.Error(1)
 }
 
 func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
 	// Given
 	mockRegister := MockRegister{}
 
-	attendees := []Attendee{
+	attendees := []attendee.Attendee{
 		{
 			AuthCode:       "12345",
 			Name:           "Bob Storey-Day",
@@ -38,7 +39,7 @@ func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
 			Telephone:      "",
 			NumberOfKids:   1,
 			Diet:           "",
-			Financials:     Financials{},
+			Financials:     attendee.Financials{},
 			ArrivalDay:     "",
 			NumberOfNights: 3,
 			StayingLate:    "",
@@ -51,7 +52,7 @@ func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
 			Telephone:      "",
 			NumberOfKids:   1,
 			Diet:           "",
-			Financials:     Financials{},
+			Financials:     attendee.Financials{},
 			ArrivalDay:     "",
 			NumberOfNights: 3,
 			StayingLate:    "",
@@ -60,8 +61,8 @@ func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	mockRegister.On("GetAllAttendees", ctx).Return(&ApiResponse{Attendees: attendees}, nil)
-	handler := Handler{attendeesStore: &mockRegister}
+	mockRegister.On("GetAllAttendees", ctx).Return(&attendee.ApiResponse{Attendees: attendees}, nil)
+	handler := Handler{AttendeesStore: &mockRegister}
 
 	// When
 	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
@@ -80,7 +81,7 @@ func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
 	// Given
 	mockRegister := MockRegister{}
 
-	attendees := []Attendee{
+	attendees := []attendee.Attendee{
 		{
 			AuthCode:       "12345",
 			Name:           "Bob Storey-Day",
@@ -88,7 +89,7 @@ func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
 			Telephone:      "",
 			NumberOfKids:   1,
 			Diet:           "",
-			Financials:     Financials{},
+			Financials:     attendee.Financials{},
 			ArrivalDay:     "",
 			NumberOfNights: 3,
 			StayingLate:    "",
@@ -97,8 +98,8 @@ func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	mockRegister.On("GetAttendeesWithAuthCode", ctx, "12345").Return(&ApiResponse{Attendees: attendees}, nil)
-	handler := Handler{attendeesStore: &mockRegister}
+	mockRegister.On("GetAttendeesWithAuthCode", ctx, "12345").Return(&attendee.ApiResponse{Attendees: attendees}, nil)
+	handler := Handler{AttendeesStore: &mockRegister}
 
 	// When
 	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{PathParameters: map[string]string{"authCode": "12345"}})
@@ -117,8 +118,8 @@ func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 	// Given
 	mockRegister := MockRegister{}
 	ctx := context.Background()
-	mockRegister.On("GetAllAttendees", ctx).Return(&ApiResponse{Attendees: []Attendee{}}, nil)
-	handler := Handler{attendeesStore: &mockRegister}
+	mockRegister.On("GetAllAttendees", ctx).Return(&attendee.ApiResponse{Attendees: []attendee.Attendee{}}, nil)
+	handler := Handler{AttendeesStore: &mockRegister}
 
 	// When
 	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
@@ -132,8 +133,8 @@ func Test_shouldReturnErrorWhenUnableToFetchAttendees(t *testing.T) {
 	// Given
 	mockAttendeesDatastore := MockRegister{}
 	ctx := context.Background()
-	mockAttendeesDatastore.On("GetAllAttendees", ctx).Return(&ApiResponse{}, fmt.Errorf("some error"))
-	handler := Handler{attendeesStore: &mockAttendeesDatastore}
+	mockAttendeesDatastore.On("GetAllAttendees", ctx).Return(&attendee.ApiResponse{}, fmt.Errorf("some error"))
+	handler := Handler{AttendeesStore: &mockAttendeesDatastore}
 
 	// When
 	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})

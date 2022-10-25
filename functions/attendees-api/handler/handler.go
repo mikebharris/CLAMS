@@ -1,6 +1,7 @@
-package main
+package handler
 
 import (
+	"attendees-api/attendee"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -12,24 +13,24 @@ var headers = map[string]string{
 	"Content-Type": "application/json",
 }
 
-type AttendeesStoreInterface interface {
-	GetAllAttendees(ctx context.Context) (*ApiResponse, error)
-	GetAttendeesWithAuthCode(ctx context.Context, authCode string) (*ApiResponse, error)
+type IAttendeesStore interface {
+	GetAllAttendees(ctx context.Context) (*attendee.ApiResponse, error)
+	GetAttendeesWithAuthCode(ctx context.Context, authCode string) (*attendee.ApiResponse, error)
 }
 
 type Handler struct {
-	attendeesStore AttendeesStoreInterface
+	AttendeesStore IAttendeesStore
 }
 
 func (h Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var attendees *ApiResponse
+	var attendees *attendee.ApiResponse
 	var err error
 
 	authCode := request.PathParameters["authCode"]
 	if authCode != "" {
-		attendees, err = h.attendeesStore.GetAttendeesWithAuthCode(ctx, authCode)
+		attendees, err = h.AttendeesStore.GetAttendeesWithAuthCode(ctx, authCode)
 	} else {
-		attendees, err = h.attendeesStore.GetAllAttendees(ctx)
+		attendees, err = h.AttendeesStore.GetAllAttendees(ctx)
 	}
 
 	if err != nil {

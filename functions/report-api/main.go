@@ -7,13 +7,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"os"
+	"report-api/attendee"
+	"report-api/handler"
 )
 
 func main() {
 	cfg := newConfig()
 
-	lambdaHandler := Handler{
-		attendeesStore: AttendeesStore{
+	lambdaHandler := handler.Handler{
+		AttendeesStore: attendee.AttendeesStore{
 			Db:    dynamodb.NewFromConfig(cfg),
 			Table: os.Getenv("ATTENDEES_TABLE_NAME"),
 		},

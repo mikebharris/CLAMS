@@ -1,4 +1,4 @@
-package main
+package attendee
 
 import (
 	"context"
@@ -13,13 +13,13 @@ type ApiResponse struct {
 	Attendees []Attendee `json:"Attendees"`
 }
 
-type DatastoreInterface interface {
+type IDatastore interface {
 	Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error)
 	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
 }
 
 type AttendeesStore struct {
-	Db    DatastoreInterface
+	Db    IDatastore
 	Table string
 }
 

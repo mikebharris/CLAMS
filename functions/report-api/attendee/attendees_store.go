@@ -1,4 +1,4 @@
-package main
+package attendee
 
 import (
 	"context"
@@ -8,10 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
-
-type AttendeesStoreInterface interface {
-	GetAllAttendees(ctx context.Context) ([]Attendee, error)
-}
 
 type DatastoreInterface interface {
 	Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error)

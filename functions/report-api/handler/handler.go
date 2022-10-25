@@ -1,22 +1,27 @@
-package main
+package handler
 
 import (
 	"context"
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
 	"net/http"
+	"report-api/attendee"
 )
 
 var headers = map[string]string{
 	"Content-Type": "application/json",
 }
 
+type IAttendeesStore interface {
+	GetAllAttendees(ctx context.Context) ([]attendee.Attendee, error)
+}
+
 type Handler struct {
-	attendeesStore AttendeesStoreInterface
+	AttendeesStore IAttendeesStore
 }
 
 func (h Handler) HandleRequest(ctx context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	attendees, err := h.attendeesStore.GetAllAttendees(ctx)
+	attendees, err := h.AttendeesStore.GetAllAttendees(ctx)
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, err
 	}
