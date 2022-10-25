@@ -42,9 +42,9 @@ func Test_shouldReturnAttendees(t *testing.T) {
 
 	// Then
 	assert.Nil(t, err)
-	assert.Equal(t, &ApiResponse{Attendees: []Attendee{{
+	assert.Equal(t, []Attendee{{
 		AuthCode: "12345",
-	}}}, attendees)
+	}}, attendees)
 }
 
 func Test_shouldReturnNoAttendeesWhenUnableToScanDynamoDB(t *testing.T) {
