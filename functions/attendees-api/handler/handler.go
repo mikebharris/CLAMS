@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"attendees-api/attendee"
 	"context"
 	"encoding/json"
+	"github.com/mikebharris/CLAMS/attendee"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -14,8 +14,12 @@ var headers = map[string]string{
 }
 
 type IAttendeesStore interface {
-	GetAllAttendees(ctx context.Context) (*attendee.ApiResponse, error)
-	GetAttendeesWithAuthCode(ctx context.Context, authCode string) (*attendee.ApiResponse, error)
+	GetAllAttendees(ctx context.Context) ([]attendee.Attendee, error)
+	GetAttendeesWithAuthCode(ctx context.Context, authCode string) ([]attendee.Attendee, error)
+}
+
+type ApiResponse struct {
+	Attendees []attendee.Attendee `json:"Attendees"`
 }
 
 type Handler struct {
@@ -23,7 +27,7 @@ type Handler struct {
 }
 
 func (h Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var attendees *attendee.ApiResponse
+	var attendees []attendee.Attendee
 	var err error
 
 	authCode := request.PathParameters["authCode"]
@@ -37,11 +41,11 @@ func (h Handler) HandleRequest(ctx context.Context, request events.APIGatewayPro
 		return events.APIGatewayProxyResponse{}, err
 	}
 
-	if len(attendees.Attendees) == 0 {
+	if len(attendees) == 0 {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusNotFound}, nil
 	}
 
-	m, _ := json.Marshal(attendees)
+	m, _ := json.Marshal(ApiResponse{Attendees: attendees})
 
 	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: string(m)}, nil
 }

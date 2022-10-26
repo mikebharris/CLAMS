@@ -1,10 +1,10 @@
 package messages
 
 import (
-	"attendee-writer/attendee"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/mikebharris/CLAMS/attendee"
 	"strings"
 	"time"
 )

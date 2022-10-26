@@ -1,8 +1,8 @@
 package main
 
 import (
-	"attendees-api/attendee"
 	"attendees-api/handler"
+	"github.com/mikebharris/CLAMS/attendee"
 	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"

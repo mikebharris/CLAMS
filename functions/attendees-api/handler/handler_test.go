@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"attendees-api/attendee"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/mikebharris/CLAMS/attendee"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/http"
@@ -17,14 +17,14 @@ type MockRegister struct {
 	mock.Mock
 }
 
-func (r *MockRegister) GetAllAttendees(ctx context.Context) (*attendee.ApiResponse, error) {
+func (r *MockRegister) GetAllAttendees(ctx context.Context) ([]attendee.Attendee, error) {
 	args := r.Called(ctx)
-	return args.Get(0).(*attendee.ApiResponse), args.Error(1)
+	return args.Get(0).([]attendee.Attendee), args.Error(1)
 }
 
-func (r *MockRegister) GetAttendeesWithAuthCode(ctx context.Context, authCode string) (*attendee.ApiResponse, error) {
+func (r *MockRegister) GetAttendeesWithAuthCode(ctx context.Context, authCode string) ([]attendee.Attendee, error) {
 	args := r.Called(ctx, authCode)
-	return args.Get(0).(*attendee.ApiResponse), args.Error(1)
+	return args.Get(0).([]attendee.Attendee), args.Error(1)
 }
 
 func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
@@ -61,7 +61,7 @@ func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	mockRegister.On("GetAllAttendees", ctx).Return(&attendee.ApiResponse{Attendees: attendees}, nil)
+	mockRegister.On("GetAllAttendees", ctx).Return(attendees, nil)
 	handler := Handler{AttendeesStore: &mockRegister}
 
 	// When
@@ -98,7 +98,7 @@ func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	mockRegister.On("GetAttendeesWithAuthCode", ctx, "12345").Return(&attendee.ApiResponse{Attendees: attendees}, nil)
+	mockRegister.On("GetAttendeesWithAuthCode", ctx, "12345").Return(attendees, nil)
 	handler := Handler{AttendeesStore: &mockRegister}
 
 	// When
@@ -118,7 +118,7 @@ func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 	// Given
 	mockRegister := MockRegister{}
 	ctx := context.Background()
-	mockRegister.On("GetAllAttendees", ctx).Return(&attendee.ApiResponse{Attendees: []attendee.Attendee{}}, nil)
+	mockRegister.On("GetAllAttendees", ctx).Return([]attendee.Attendee{}, nil)
 	handler := Handler{AttendeesStore: &mockRegister}
 
 	// When
@@ -133,7 +133,7 @@ func Test_shouldReturnErrorWhenUnableToFetchAttendees(t *testing.T) {
 	// Given
 	mockAttendeesDatastore := MockRegister{}
 	ctx := context.Background()
-	mockAttendeesDatastore.On("GetAllAttendees", ctx).Return(&attendee.ApiResponse{}, fmt.Errorf("some error"))
+	mockAttendeesDatastore.On("GetAllAttendees", ctx).Return([]attendee.Attendee{}, fmt.Errorf("some error"))
 	handler := Handler{AttendeesStore: &mockAttendeesDatastore}
 
 	// When

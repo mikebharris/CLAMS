@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/mikebharris/CLAMS/attendee"
 	"net/http"
-	"report-api/attendee"
 )
 
 var headers = map[string]string{

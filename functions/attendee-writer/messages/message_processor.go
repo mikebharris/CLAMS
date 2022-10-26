@@ -1,10 +1,10 @@
 package messages
 
 import (
-	"attendee-writer/attendee"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/mikebharris/CLAMS/attendee"
 	"log"
 )
 
@@ -18,15 +18,14 @@ type MessageProcessor struct {
 }
 
 func (mp MessageProcessor) ProcessMessage(ctx context.Context, msg events.SQSMessage) error {
-	attendeeFactory := AttendeeFactory{Clock: mp.Clock}
-	attendee, err := attendeeFactory.NewFromMessage(msg)
+	a, err := AttendeeFactory{Clock: mp.Clock}.NewFromMessage(msg)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("processing a message with id %s for event source %s\nattendee = %v", msg.MessageId, msg.EventSource, attendee)
+	log.Printf("processing a message with id %s for event source %s\nattendee = %v", msg.MessageId, msg.EventSource, a)
 
-	if err := mp.AttendeesStore.Store(ctx, attendee); err != nil {
+	if err := mp.AttendeesStore.Store(ctx, a); err != nil {
 		return fmt.Errorf("storing attendee in datastore: %v", err)
 	}
 
