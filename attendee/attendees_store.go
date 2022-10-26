@@ -12,6 +12,7 @@ import (
 type IDatastore interface {
 	Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error)
 	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
+	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
 }
 
 type AttendeesStore struct {
@@ -69,4 +70,18 @@ func (as *AttendeesStore) toAttendee(record map[string]types.AttributeValue) Att
 		return Attendee{}
 	}
 	return attendee
+}
+
+func (as *AttendeesStore) Store(ctx context.Context, attendee Attendee) error {
+	marshalMap, _ := attributevalue.MarshalMap(attendee)
+	_, err := as.Db.PutItem(ctx,
+		&dynamodb.PutItemInput{
+			Item:      marshalMap,
+			TableName: aws.String(as.Table),
+		})
+
+	if err != nil {
+		return fmt.Errorf("putting attendee in datastore: %v", err)
+	}
+	return nil
 }

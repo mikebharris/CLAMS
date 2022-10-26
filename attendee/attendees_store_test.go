@@ -3,6 +3,8 @@ package attendee
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
@@ -10,22 +12,27 @@ import (
 	"testing"
 )
 
-type MockDatastore struct {
+type MockDynamoClient struct {
 	mock.Mock
 }
 
-func (dc *MockDatastore) Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(*dynamodb.Options)) (*dynamodb.ScanOutput, error) {
+func (dc *MockDynamoClient) Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(*dynamodb.Options)) (*dynamodb.ScanOutput, error) {
 	args := dc.Called()
 	return args.Get(0).(*dynamodb.ScanOutput), args.Error(1)
 }
 
-func (dc *MockDatastore) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+func (dc *MockDynamoClient) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 	args := dc.Called()
 	return args.Get(0).(*dynamodb.GetItemOutput), args.Error(1)
 }
 
+func (d *MockDynamoClient) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+	args := d.Called(ctx, params)
+	return args.Get(0).(*dynamodb.PutItemOutput), args.Error(1)
+}
+
 func Test_shouldReturnAttendees(t *testing.T) {
-	mockDynamoClient := MockDatastore{}
+	mockDynamoClient := MockDynamoClient{}
 	mockDynamoClient.
 		On("Scan", mock.Anything).
 		Return(&dynamodb.ScanOutput{
@@ -49,7 +56,7 @@ func Test_shouldReturnAttendees(t *testing.T) {
 
 func Test_shouldReturnNoAttendeesWhenUnableToScanDynamoDB(t *testing.T) {
 	// Given
-	mockDynamoClient := MockDatastore{}
+	mockDynamoClient := MockDynamoClient{}
 	mockDynamoClient.
 		On("Scan", mock.Anything).
 		Return(&dynamodb.ScanOutput{}, fmt.Errorf("some dynamo error"))
@@ -66,7 +73,7 @@ func Test_shouldReturnNoAttendeesWhenUnableToScanDynamoDB(t *testing.T) {
 
 func Test_shouldReturnNoAttendeesWhenThereAreNoneInTheDatastore(t *testing.T) {
 	// Given
-	mockDynamoClient := MockDatastore{}
+	mockDynamoClient := MockDynamoClient{}
 	mockDynamoClient.
 		On("Scan", mock.Anything).
 		Return(&dynamodb.ScanOutput{}, nil)
@@ -79,4 +86,46 @@ func Test_shouldReturnNoAttendeesWhenThereAreNoneInTheDatastore(t *testing.T) {
 	// Then
 	assert.Nil(t, err)
 	assert.Nil(t, response)
+}
+
+func TestAttendees_ShouldPutItemInDynamoDbWhenStoreIsCalled(t *testing.T) {
+	// Given
+	ctx := context.Background()
+
+	attendee := Attendee{}
+	marshalMap, _ := attributevalue.MarshalMap(attendee)
+
+	dynamoClient := MockDynamoClient{}
+	dynamoClient.On("PutItem", ctx, mock.Anything).Return(&dynamodb.PutItemOutput{}, nil)
+
+	store := AttendeesStore{Db: &dynamoClient, Table: "some-table"}
+
+	// When
+	err := store.Store(ctx, attendee)
+
+	// Then
+	assert.Nil(t, err)
+	dynamoClient.AssertNumberOfCalls(t, "PutItem", 1)
+	dynamoClient.AssertCalled(t, "PutItem", ctx, &dynamodb.PutItemInput{
+		Item:      marshalMap,
+		TableName: aws.String("some-table"),
+	})
+}
+
+func TestAttendees_ShouldReturnErrorIfUnableToPutItemInDynamoDB(t *testing.T) {
+	// Given
+	ctx := context.Background()
+
+	dynamoClient := MockDynamoClient{}
+	dynamoClient.On("PutItem", ctx, mock.Anything).Return(&dynamodb.PutItemOutput{}, fmt.Errorf("some dynamo error"))
+
+	store := AttendeesStore{Db: &dynamoClient, Table: "some-table"}
+
+	// When
+	err := store.Store(ctx, Attendee{})
+
+	// Then
+	assert.NotNil(t, err)
+	assert.Equal(t, fmt.Errorf("putting attendee in datastore: some dynamo error"), err)
+	dynamoClient.AssertNumberOfCalls(t, "PutItem", 1)
 }
