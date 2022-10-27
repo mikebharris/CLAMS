@@ -69,7 +69,7 @@ func main() {
 
 ## Other files
 
-The Terraform configuration files are in the [](terraform) directory, the frontend (hastily built in Svelte) is built in [](frontend), and [](uploader) containw the utility, which can be called from within BAMS, to upload the latest group of attendees to SQS.
+The Terraform configuration files are in the [](terraform) directory, the frontend (hastily built in Svelte) is built in [](frontend), and [](uploader) containw the utility, which can be called from within [BAMS](https://github.com/mikebharris/), to upload the latest group of attendees to SQS.
 
 # Running Tests
 
