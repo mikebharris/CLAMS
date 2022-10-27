@@ -15,7 +15,17 @@ A personal learning project using a connection to a [legacy event management sys
 
 ## More
 
-This is primarily a project for me to learn Go to establish and understand patterns for writing service and unit tests.
+This is primarily a project for me to learn Go to establish and understand patterns for writing service and unit tests.  It was used as the basis for a workshop that I first did in Todmorden in June 2022.
+
+In the project I also attempt to use best practices around:
+
+* Test driven development using the Gomock library for unit tests
+* Behavioural driven development tests using Godock and feature files written in Gherkin
+* Clean code - naming of methods, variables, tests, packages, etc.
+* SOLID (where possible given that Go is not an OO language)
+* Design patterns
+* Moduliarisation of Go code using packages
+* Infrastructure as code and devops approaches using Fabric and Terraform
 
 ## Architecture
 
