@@ -61,6 +61,7 @@ def frontend(context):
 def build_and_deploy_frontend():
     api_url = get_api_url()
     with do_in_directory('frontend'):
+        ensure_frontend_dependencies_are_installed()
         build_frontend(api_url)
     deploy_frontend()
 
@@ -93,6 +94,11 @@ def remove_local_terraform_state_files_to_prevent_deploying_in_wrong_environment
     with do_in_directory('terraform'):
         if path.exists('.terraform'):
             shutil.rmtree('.terraform')
+
+
+def ensure_frontend_dependencies_are_installed():
+    print("Installing frontend dependencies...")
+    local('npm install')
 
 
 def build_frontend(api_url: str):
