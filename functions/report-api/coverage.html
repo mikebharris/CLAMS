@@ -3,7 +3,7 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>attendee: Go Coverage Report</title>
+		<title>handler: Go Coverage Report</title>
 		<style>
 			body {
 				background: black;
@@ -55,9 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">report-api/attendee/attendees_store.go (92.3%)</option>
-				
-				<option value="file1">report-api/handler/handler.go (100.0%)</option>
+				<option value="file0">report-api/handler/handler.go (100.0%)</option>
 				
 				</select>
 			</div>
@@ -71,63 +69,14 @@
 		</div>
 		<div id="content">
 		
-		<pre class="file" id="file0" style="display: none">package attendee
-
-import (
-        "context"
-        "fmt"
-        "github.com/aws/aws-sdk-go-v2/aws"
-        "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
-        "github.com/aws/aws-sdk-go-v2/service/dynamodb"
-        "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-)
-
-type DatastoreInterface interface {
-        Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error)
-}
-
-type AttendeesStore struct {
-        Db    DatastoreInterface
-        Table string
-}
-
-func (a AttendeesStore) GetAllAttendees(ctx context.Context) ([]Attendee, error) <span class="cov8" title="1">{
-        records, err := a.Db.Scan(ctx, &amp;dynamodb.ScanInput{
-                TableName: aws.String(a.Table),
-        })
-        if err != nil </span><span class="cov8" title="1">{
-                return nil, fmt.Errorf("fetching attendees from DynamoDB: %v", err)
-        }</span>
-
-        <span class="cov8" title="1">if len(records.Items) == 0 </span><span class="cov8" title="1">{
-                return nil, nil
-        }</span>
-
-        <span class="cov8" title="1">var attendees []Attendee
-        for _, r := range records.Items </span><span class="cov8" title="1">{
-                attendees = append(attendees, a.toAttendee(r))
-        }</span>
-
-        <span class="cov8" title="1">return attendees, nil</span>
-}
-
-func (a AttendeesStore) toAttendee(record map[string]types.AttributeValue) Attendee <span class="cov8" title="1">{
-        var attendee Attendee
-        if err := attributevalue.UnmarshalMap(record, &amp;attendee); err != nil </span><span class="cov0" title="0">{
-                return Attendee{}
-        }</span>
-        <span class="cov8" title="1">return attendee</span>
-}
-</pre>
-		
-		<pre class="file" id="file1" style="display: none">package handler
+		<pre class="file" id="file0" style="display: none">package handler
 
 import (
         "context"
         "encoding/json"
         "github.com/aws/aws-lambda-go/events"
+        "github.com/mikebharris/CLAMS/attendee"
         "net/http"
-        "report-api/attendee"
 )
 
 var headers = map[string]string{

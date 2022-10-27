@@ -35,6 +35,42 @@ To upload data to CLAMS from BAMS, please see the [Uploader utility's README](up
 
 In the following test and deployment sections you'll need to create a pair of credentials.  Log in to AWS console for the account you wish to use to deploy the application, go to IAM, and choose your user.  Click the _Security credentials_ tab and then the _Create access key_ button.  This will create a tuple of AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for you.  You'll need these shortly.   Note you can only create two credentials tuples per IAM user, and once you accept you'll not longer be able to view the AWS_SECRET_ACCESS_KEY.  For utmost security delete these at the end of a session and recreate them at the next. 
 
+# The Components
+
+## Lambdas
+
+There are three AWS Lambda functions:
+
+* [Attendee Writer](functions/attendee-writer) - Writes new incoming attendees into the DynamoDB datastore
+* [Attendee API](functions/attendees-api) - Presents the attendee's details to the world in JSON
+* [Report API](functions/report-api) - Does some calculations and presents data to the world in JSON
+
+## Shared packages
+
+As an example of shared packages, these Lambda functions all use the shared _attendee_ package located in [](attendee).  This can be used in your own programs thus:
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/mikebharris/CLAMS/attendee"
+)
+
+func main() {
+	awsConfig, _ := newAwsConfig("us-east-1")
+	store := attendee.AttendeesStore{Db: dynamodb.NewFromConfig(*awsConfig), Table: "the-attendee-table"}
+	attendees, _ := store.GetAllAttendees(context.Background())
+	for i, a := range attendees {
+		fmt.Printf("Attendee number %d is known as %s\n", i, a.Name)
+	}
+}
+```
+
+## Other files
+
+The Terraform configuration files are in the [](terraform) directory, the frontend (hastily built in Svelte) is built in [](frontend), and [](uploader) containw the utility, which can be called from within BAMS, to upload the latest group of attendees to SQS.
+
 # Running Tests
 
 There are service/integration-level tests that use Gherkin syntax to test integration between the Lambda and other dependent AWS servies.  The tests make use of Docker containers to emulate the various services locally, and therefore you need Docker Desktop running.
