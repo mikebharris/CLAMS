@@ -27,7 +27,7 @@ func newAwsConfig(awsRegion string) (*aws.Config, error) {
 		if service == dynamodb.ServiceID {
 			return aws.Endpoint{URL: dynamoEndpointOverride}, nil
 		}
-		return cfg.EndpointResolver.ResolveEndpoint(service, region)
+		return cfg.EndpointResolverWithOptions.ResolveEndpoint(service, region)
 	})
 	return &cfg, nil
 }
