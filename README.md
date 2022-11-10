@@ -2,7 +2,7 @@
 
 _CLAMS => "BAMS in the Cloud"_
 
-A personal learning project using a connection to a [legacy event management system (BAMS)](https://github.com/mikebharris/BAMS) as a way of illustrating serverless architectures using [Go](https://go.dev/), [Python](https://www.python.org/), [Fabric](https://www.fabfile.org/), [Svelte](https://svelte.dev/) and [Terraform](https://www.terraform.io/).  CLAMS so far employs the following AWS services:
+A personal learning project using a connection to a [legacy event management system written in COBOL (BAMS)](https://github.com/mikebharris/BAMS) as a way of illustrating serverless architectures using [Go](https://go.dev/), [Python](https://www.python.org/), [Fabric](https://www.fabfile.org/), [Svelte](https://svelte.dev/) and [Terraform](https://www.terraform.io/).  CLAMS so far employs the following AWS services:
 
 * API Gateway
 * DynamoDB
@@ -15,7 +15,17 @@ A personal learning project using a connection to a [legacy event management sys
 
 ## More
 
-This is primarily a project for me to learn Go to establish and understand patterns for writing service and unit tests.
+This is primarily a project for me to learn Go to establish and understand patterns for writing service and unit tests.  It was used as the basis for a workshop that I first did in Todmorden in June 2022.
+
+In the project I also attempt to use best practices around:
+
+* Test driven development using the Gomock library for unit tests
+* Behavioural driven development tests using Godock and feature files written in Gherkin
+* Clean code - naming of methods, variables, tests, packages, etc.
+* SOLID (where possible given that Go is not an OO language)
+* Design patterns
+* Moduliarisation of Go code using packages
+* Infrastructure as code and devops approaches using Fabric and Terraform
 
 ## Architecture
 
