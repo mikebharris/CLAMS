@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+var jsonHeader = map[string]string{
+	"Content-Type": "application/json",
+}
+
 type MockAttendeesStore struct {
 	mock.Mock
 }
@@ -24,65 +28,18 @@ func (fs MockAttendeesStore) GetAllAttendees(ctx context.Context) ([]attendee.At
 
 func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 	// Given
-	mockAttendeesStore := MockAttendeesStore{}
-
-	attendees := []attendee.Attendee{
-		{
-			AuthCode:       "12345",
-			Name:           "Bob Storey-Day",
-			Email:          "",
-			Telephone:      "",
-			NumberOfKids:   1,
-			Diet:           "",
-			Financials:     attendee.Financials{},
-			ArrivalDay:     "",
-			NumberOfNights: 3,
-			StayingLate:    "",
-			CreatedTime:    time.Time{},
-		},
-		{
-			AuthCode:       "23456",
-			Name:           "Craig",
-			Email:          "",
-			Telephone:      "",
-			NumberOfKids:   1,
-			Diet:           "",
-			Financials:     attendee.Financials{},
-			ArrivalDay:     "",
-			NumberOfNights: 3,
-			StayingLate:    "",
-			CreatedTime:    time.Time{},
-		},
-	}
-
 	ctx := context.Background()
-	mockAttendeesStore.On("GetAllAttendees", ctx).Return(attendees, nil)
+
+	mockAttendeesStore := MockAttendeesStore{}
+	mockAttendeesStore.On("GetAllAttendees", ctx).Return(someAttendees(), nil)
 	handler := Handler{AttendeesStore: mockAttendeesStore}
 
 	// When
 	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
-	fmt.Println(response)
 
 	// Then
 	assert.Nil(t, err)
-
-	headers := map[string]string{
-		"Content-Type": "application/json",
-	}
-
-	report, _ := json.Marshal(Report{
-		TotalAttendees:        2,
-		TotalKids:             2,
-		TotalNightsCamped:     6,
-		TotalCampingCharge:    6000,
-		TotalPaid:             0,
-		TotalToPay:            0,
-		TotalIncome:           0,
-		AveragePaidByAttendee: 0,
-		DailyHeadCounts:       nil,
-	})
-
-	assert.Equal(t, events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: string(report)}, response)
+	assert.Equal(t, events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: jsonHeader, Body: string(report())}, response)
 }
 
 func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
@@ -111,4 +68,50 @@ func Test_shouldReturnErrorWhenUnableToFetchAttendees(t *testing.T) {
 	// Then
 	assert.Equal(t, fmt.Errorf("some error"), err)
 	assert.Equal(t, events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, response)
+}
+
+func report() []byte {
+	r, _ := json.Marshal(Report{
+		TotalAttendees:        2,
+		TotalKids:             2,
+		TotalNightsCamped:     6,
+		TotalCampingCharge:    6000,
+		TotalPaid:             0,
+		TotalToPay:            0,
+		TotalIncome:           0,
+		AveragePaidByAttendee: 0,
+		DailyHeadCounts:       nil,
+	})
+	return r
+}
+
+func someAttendees() []attendee.Attendee {
+	return []attendee.Attendee{
+		{
+			AuthCode:       "12345",
+			Name:           "Bob Storey-Day",
+			Email:          "",
+			Telephone:      "",
+			NumberOfKids:   1,
+			Diet:           "",
+			Financials:     attendee.Financials{},
+			ArrivalDay:     "",
+			NumberOfNights: 3,
+			StayingLate:    "",
+			CreatedTime:    time.Time{},
+		},
+		{
+			AuthCode:       "23456",
+			Name:           "Craig",
+			Email:          "",
+			Telephone:      "",
+			NumberOfKids:   1,
+			Diet:           "",
+			Financials:     attendee.Financials{},
+			ArrivalDay:     "",
+			NumberOfNights: 3,
+			StayingLate:    "",
+			CreatedTime:    time.Time{},
+		},
+	}
 }
