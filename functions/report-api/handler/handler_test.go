@@ -21,8 +21,8 @@ type MockAttendeesStore struct {
 	mock.Mock
 }
 
-func (fs MockAttendeesStore) GetAllAttendees(ctx context.Context) ([]attendee.Attendee, error) {
-	args := fs.Called(ctx)
+func (fs MockAttendeesStore) GetAllAttendees(context.Context) ([]attendee.Attendee, error) {
+	args := fs.Called()
 	return args.Get(0).([]attendee.Attendee), args.Error(1)
 }
 
@@ -31,7 +31,7 @@ func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 	ctx := context.Background()
 
 	mockAttendeesStore := MockAttendeesStore{}
-	mockAttendeesStore.On("GetAllAttendees", ctx).Return(someAttendees(), nil)
+	mockAttendeesStore.On("GetAllAttendees").Return(someAttendees(), nil)
 	handler := Handler{AttendeesStore: mockAttendeesStore}
 
 	// When
@@ -45,7 +45,7 @@ func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 	// Given
 	mockAttendeesDatastore := MockAttendeesStore{}
-	mockAttendeesDatastore.On("GetAllAttendees", mock.Anything).Return([]attendee.Attendee{}, nil)
+	mockAttendeesDatastore.On("GetAllAttendees").Return([]attendee.Attendee{}, nil)
 	handler := Handler{AttendeesStore: &mockAttendeesDatastore}
 
 	// When
@@ -59,7 +59,7 @@ func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 func Test_shouldReturnErrorWhenUnableToFetchAttendees(t *testing.T) {
 	// Given
 	mockAttendeesDatastore := MockAttendeesStore{}
-	mockAttendeesDatastore.On("GetAllAttendees", mock.Anything).Return([]attendee.Attendee{}, fmt.Errorf("some error"))
+	mockAttendeesDatastore.On("GetAllAttendees").Return([]attendee.Attendee{}, fmt.Errorf("some error"))
 	handler := Handler{AttendeesStore: &mockAttendeesDatastore}
 
 	// When
@@ -102,7 +102,7 @@ func someAttendees() []attendee.Attendee {
 		},
 		{
 			AuthCode:       "23456",
-			Name:           "Craig",
+			Name:           "Craig Duffy",
 			Email:          "",
 			Telephone:      "",
 			NumberOfKids:   1,

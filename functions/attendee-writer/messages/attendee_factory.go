@@ -14,7 +14,6 @@ type IClock interface {
 }
 
 type AttendeeFactory struct {
-	Clock IClock
 }
 
 func (af AttendeeFactory) NewFromMessage(message events.SQSMessage) (attendee.Attendee, error) {
@@ -39,7 +38,6 @@ func (af AttendeeFactory) NewFromMessage(message events.SQSMessage) (attendee.At
 		ArrivalDay:     msg.ArrivalDay,
 		NumberOfNights: af.computeNights(msg.ArrivalDay, msg.StayingLate),
 		StayingLate:    msg.StayingLate,
-		CreatedTime:    af.Clock.Now(),
 	}
 	return a, nil
 }

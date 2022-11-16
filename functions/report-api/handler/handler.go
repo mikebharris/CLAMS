@@ -13,7 +13,7 @@ var headers = map[string]string{
 }
 
 type IAttendeesStore interface {
-	GetAllAttendees(ctx context.Context) ([]attendee.Attendee, error)
+	GetAllAttendees(context.Context) ([]attendee.Attendee, error)
 }
 
 type Handler struct {

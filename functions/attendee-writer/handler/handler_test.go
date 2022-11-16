@@ -4,65 +4,44 @@ import (
 	"attendee-writer/messages"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/mikebharris/CLAMS/attendee"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"testing"
-	"time"
 )
 
-type MockAttendeesStore struct {
-	mock.Mock
+type SpyingAttendeesStore struct {
+	attendees *[]attendee.Attendee
 }
 
-func (s *MockAttendeesStore) Store(ctx context.Context, attendee attendee.Attendee) error {
-	args := s.Called(ctx, attendee)
-	return args.Error(0)
-}
-
-type MockClock struct {
-	mock.Mock
-}
-
-func (m MockClock) Now() time.Time {
-	args := m.Called()
-	return args.Get(0).(time.Time)
+func (s SpyingAttendeesStore) Store(ctx context.Context, attendee attendee.Attendee) error {
+	if attendee == anotherAttendee() {
+		return errors.New("some error")
+	}
+	*s.attendees = append(*s.attendees, attendee)
+	return nil
 }
 
 func Test_ShouldProcessMessagesPuttingFailuresOnInBatchItemFailures(t *testing.T) {
 	// Given
 	ctx := context.Background()
-	mockAttendeesStore := MockAttendeesStore{}
-	clock := MockClock{}
 
+	var attendees []attendee.Attendee
 	h := Handler{
 		MessageProcessor: messages.MessageProcessor{
-			AttendeesStore: &mockAttendeesStore,
-			Clock:          &clock,
+			AttendeesStore: &SpyingAttendeesStore{&attendees},
 		},
 	}
-
-	// mocking the clock - this is only so we can test the mock calls to Store below!
-	now := time.Now()
-	clock.On("Now").Return(now)
-
-	// mocking the adaptor
-	anAttendee := anAttendee(now)
-	anotherAttendee := anotherAttendee(now)
-	mockAttendeesStore.On("Store", ctx, anAttendee).Return(nil)
-	mockAttendeesStore.On("Store", ctx, anotherAttendee).Return(fmt.Errorf("some error"))
 
 	// When
 	request, err := h.HandleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{aMessage(), anotherMessage()}})
 
 	// Then
 	assert.Nil(t, err)
+	assert.Equal(t, anAttendee(), attendees[0])
 	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: []events.SQSBatchItemFailure{{ItemIdentifier: anotherMessage().MessageId}}}, request)
-
-	mockAttendeesStore.AssertCalled(t, "Store", ctx, anAttendee)
-	mockAttendeesStore.AssertCalled(t, "Store", ctx, anotherAttendee)
 }
 
 func Test_handleRequest_ShouldReturnErrorIfThereSqsEventContainsNoMessages(t *testing.T) {
@@ -79,7 +58,7 @@ func Test_handleRequest_ShouldReturnErrorIfThereSqsEventContainsNoMessages(t *te
 	assert.Equal(t, fmt.Errorf("sqs event contained no records"), err)
 }
 
-func anAttendee(now time.Time) attendee.Attendee {
+func anAttendee() attendee.Attendee {
 	return attendee.Attendee{
 		AuthCode:     "123456",
 		Name:         "Frank Ostrowski",
@@ -95,11 +74,10 @@ func anAttendee(now time.Time) attendee.Attendee {
 		ArrivalDay:     "Wednesday",
 		NumberOfNights: 4,
 		StayingLate:    "No",
-		CreatedTime:    now,
 	}
 }
 
-func anotherAttendee(now time.Time) attendee.Attendee {
+func anotherAttendee() attendee.Attendee {
 	return attendee.Attendee{
 		AuthCode:     "0101010",
 		Name:         "Grace Hopper",
@@ -115,7 +93,6 @@ func anotherAttendee(now time.Time) attendee.Attendee {
 		ArrivalDay:     "Wednesday",
 		NumberOfNights: 4,
 		StayingLate:    "No",
-		CreatedTime:    now,
 	}
 }
 

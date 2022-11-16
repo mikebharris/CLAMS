@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.15.0
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.2
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.17.3
-	github.com/mikebharris/CLAMS v0.0.0-20221026205356-b667cc601fe0
+	github.com/mikebharris/CLAMS v0.0.0-20221116192726-441978e88753
 	github.com/stretchr/testify v1.8.1
 )
 

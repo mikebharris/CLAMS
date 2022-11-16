@@ -8,16 +8,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/mikebharris/CLAMS/attendee"
 	"os"
-	"time"
 )
 
 const (
 	awsRegion = "us-east-1"
 )
-
-type Clock struct{}
-
-func (Clock) Now() time.Time { return time.Now() }
 
 func main() {
 	awsConfig, err := newAwsConfig(awsRegion)
@@ -35,7 +30,6 @@ func newDefaultHandler(awsConfig *aws.Config) handler.Handler {
 				Db:    dynamodb.NewFromConfig(*awsConfig),
 				Table: os.Getenv("ATTENDEES_TABLE_NAME"),
 			},
-			Clock: Clock{},
 		},
 	}
 }

@@ -14,11 +14,10 @@ type IAttendeesStore interface {
 
 type MessageProcessor struct {
 	AttendeesStore IAttendeesStore
-	Clock          IClock
 }
 
 func (mp MessageProcessor) ProcessMessage(ctx context.Context, msg events.SQSMessage) error {
-	a, err := AttendeeFactory{Clock: mp.Clock}.NewFromMessage(msg)
+	a, err := AttendeeFactory{}.NewFromMessage(msg)
 	if err != nil {
 		return err
 	}

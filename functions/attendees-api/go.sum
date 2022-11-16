@@ -47,6 +47,8 @@ github.com/mikebharris/CLAMS v0.0.0-20221025200700-2c42dcaa03aa h1:9hvOq6j4T8GDQ
 github.com/mikebharris/CLAMS v0.0.0-20221025200700-2c42dcaa03aa/go.mod h1:eR/tPSNJZHh7qtoEAlr4iVHH2A7HM+Bpp8E+l4+YcuY=
 github.com/mikebharris/CLAMS v0.0.0-20221025203544-04ae9d933a95 h1:lGUhSgLclDPRt+cCM5RxX/wNAreSLYJSvr6VpGz3qTw=
 github.com/mikebharris/CLAMS v0.0.0-20221025203544-04ae9d933a95/go.mod h1:eR/tPSNJZHh7qtoEAlr4iVHH2A7HM+Bpp8E+l4+YcuY=
+github.com/mikebharris/CLAMS v0.0.0-20221116192726-441978e88753 h1:584IsEvk5bDUlML8lqMnST6uFQXo4nMQr+UlQd1NZZ8=
+github.com/mikebharris/CLAMS v0.0.0-20221116192726-441978e88753/go.mod h1:eR/tPSNJZHh7qtoEAlr4iVHH2A7HM+Bpp8E+l4+YcuY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.17.1
 	github.com/aws/aws-sdk-go-v2/config v1.15.3
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.17.3
-	github.com/mikebharris/CLAMS v0.0.0-20221025203544-04ae9d933a95
+	github.com/mikebharris/CLAMS v0.0.0-20221116192726-441978e88753
 	github.com/stretchr/testify v1.8.1
 )
 

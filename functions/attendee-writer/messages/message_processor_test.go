@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
-	"time"
 )
 
 type MockAttendeesStore struct {
@@ -21,22 +20,9 @@ func (s *MockAttendeesStore) Store(ctx context.Context, attendee attendee.Attend
 	return args.Error(0)
 }
 
-type MockClock struct {
-	mock.Mock
-}
-
-func (m MockClock) Now() time.Time {
-	args := m.Called()
-	return args.Get(0).(time.Time)
-}
-
 func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	// Given
 	ctx := context.Background()
-
-	mockClock := MockClock{}
-	now := time.Now()
-	mockClock.On("Now").Return(now)
 
 	mockAttendeesStore := MockAttendeesStore{}
 	attendee := attendee.Attendee{
@@ -54,11 +40,10 @@ func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 		ArrivalDay:     "Wednesday",
 		NumberOfNights: 4,
 		StayingLate:    "No",
-		CreatedTime:    now,
 	}
 	mockAttendeesStore.On("Store", ctx, attendee).Return(nil)
 
-	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore, Clock: mockClock}
+	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore}
 
 	message := Message{
 		Name:         "Frank Ostrowski",
@@ -87,14 +72,10 @@ func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
 	// Given
 	ctx := context.Background()
 
-	mockClock := MockClock{}
-	now := time.Now()
-	mockClock.On("Now").Return(now)
-
 	mockAttendeesStore := MockAttendeesStore{}
 	mockAttendeesStore.On("Store", ctx, mock.Anything).Return(fmt.Errorf("some storage error"))
 
-	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore, Clock: mockClock}
+	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore}
 
 	message := Message{
 		Name:         "Frank Ostrowski",
@@ -125,9 +106,8 @@ func Test_processMessage_ShouldReturnErrorIfUnableToParseMessage(t *testing.T) {
 	ctx := context.Background()
 
 	mockAttendeesStore := MockAttendeesStore{}
-	mockClock := MockClock{}
 
-	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore, Clock: &mockClock}
+	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore}
 
 	// When
 	err := mp.ProcessMessage(ctx, events.SQSMessage{Body: ""})
@@ -136,5 +116,4 @@ func Test_processMessage_ShouldReturnErrorIfUnableToParseMessage(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Regexp(t, "^reading message.*", err)
 	mockAttendeesStore.AssertNotCalled(t, "Store")
-	mockClock.AssertNotCalled(t, "Now")
 }
