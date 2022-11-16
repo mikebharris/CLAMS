@@ -21,7 +21,7 @@ type MockAttendeesStore struct {
 	mock.Mock
 }
 
-func (fs MockAttendeesStore) GetAllAttendees(context.Context) ([]attendee.Attendee, error) {
+func (fs MockAttendeesStore) GetAllAttendees() ([]attendee.Attendee, error) {
 	args := fs.Called()
 	return args.Get(0).([]attendee.Attendee), args.Error(1)
 }

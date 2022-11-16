@@ -17,13 +17,13 @@ type MockRegister struct {
 	mock.Mock
 }
 
-func (r *MockRegister) GetAllAttendees(ctx context.Context) ([]attendee.Attendee, error) {
-	args := r.Called(ctx)
+func (r *MockRegister) GetAllAttendees() ([]attendee.Attendee, error) {
+	args := r.Called()
 	return args.Get(0).([]attendee.Attendee), args.Error(1)
 }
 
-func (r *MockRegister) GetAttendeesWithAuthCode(ctx context.Context, authCode string) ([]attendee.Attendee, error) {
-	args := r.Called(ctx, authCode)
+func (r *MockRegister) GetAttendeesWithAuthCode(authCode string) ([]attendee.Attendee, error) {
+	args := r.Called(authCode)
 	return args.Get(0).([]attendee.Attendee), args.Error(1)
 }
 
@@ -61,7 +61,7 @@ func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	mockRegister.On("GetAllAttendees", ctx).Return(attendees, nil)
+	mockRegister.On("GetAllAttendees").Return(attendees, nil)
 	handler := Handler{AttendeesStore: &mockRegister}
 
 	// When
@@ -74,7 +74,7 @@ func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
 	assert.Equal(t, events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: body}, response)
 	assert.Nil(t, err)
 
-	mockRegister.AssertCalled(t, "GetAllAttendees", ctx)
+	mockRegister.AssertCalled(t, "GetAllAttendees")
 }
 
 func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
@@ -98,7 +98,7 @@ func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	mockRegister.On("GetAttendeesWithAuthCode", ctx, "12345").Return(attendees, nil)
+	mockRegister.On("GetAttendeesWithAuthCode", "12345").Return(attendees, nil)
 	handler := Handler{AttendeesStore: &mockRegister}
 
 	// When
@@ -111,14 +111,14 @@ func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
 	assert.Equal(t, events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: body}, response)
 	assert.Nil(t, err)
 
-	mockRegister.AssertCalled(t, "GetAttendeesWithAuthCode", ctx, "12345")
+	mockRegister.AssertCalled(t, "GetAttendeesWithAuthCode", "12345")
 }
 
 func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 	// Given
 	mockRegister := MockRegister{}
 	ctx := context.Background()
-	mockRegister.On("GetAllAttendees", ctx).Return([]attendee.Attendee{}, nil)
+	mockRegister.On("GetAllAttendees").Return([]attendee.Attendee{}, nil)
 	handler := Handler{AttendeesStore: &mockRegister}
 
 	// When
@@ -133,7 +133,7 @@ func Test_shouldReturnErrorWhenUnableToFetchAttendees(t *testing.T) {
 	// Given
 	mockAttendeesDatastore := MockRegister{}
 	ctx := context.Background()
-	mockAttendeesDatastore.On("GetAllAttendees", ctx).Return([]attendee.Attendee{}, fmt.Errorf("some error"))
+	mockAttendeesDatastore.On("GetAllAttendees").Return([]attendee.Attendee{}, fmt.Errorf("some error"))
 	handler := Handler{AttendeesStore: &mockAttendeesDatastore}
 
 	// When

@@ -53,6 +53,8 @@ github.com/mikebharris/CLAMS v0.0.0-20221026205356-b667cc601fe0 h1:+kjhFYPZ3Puri
 github.com/mikebharris/CLAMS v0.0.0-20221026205356-b667cc601fe0/go.mod h1:eR/tPSNJZHh7qtoEAlr4iVHH2A7HM+Bpp8E+l4+YcuY=
 github.com/mikebharris/CLAMS v0.0.0-20221116192726-441978e88753 h1:584IsEvk5bDUlML8lqMnST6uFQXo4nMQr+UlQd1NZZ8=
 github.com/mikebharris/CLAMS v0.0.0-20221116192726-441978e88753/go.mod h1:eR/tPSNJZHh7qtoEAlr4iVHH2A7HM+Bpp8E+l4+YcuY=
+github.com/mikebharris/CLAMS v0.0.0-20221116195928-d2040c66fe3c h1:2HV574qh+HBN699F/p6bZCfU2Okyypl3jYmTkTPbllw=
+github.com/mikebharris/CLAMS v0.0.0-20221116195928-d2040c66fe3c/go.mod h1:eR/tPSNJZHh7qtoEAlr4iVHH2A7HM+Bpp8E+l4+YcuY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=

@@ -8,7 +8,7 @@ import (
 )
 
 type IMessageProcessor interface {
-	ProcessMessage(ctx context.Context, message events.SQSMessage) error
+	ProcessMessage(msg events.SQSMessage) error
 }
 
 type Handler struct {
@@ -28,7 +28,7 @@ func (h Handler) HandleRequest(ctx context.Context, sqsEvent events.SQSEvent) (e
 		sqsMessage := record
 		go func() {
 			defer wg.Done()
-			if err := h.MessageProcessor.ProcessMessage(ctx, sqsMessage); err != nil {
+			if err := h.MessageProcessor.ProcessMessage(sqsMessage); err != nil {
 				failedEventChan <- sqsMessage
 			}
 		}()

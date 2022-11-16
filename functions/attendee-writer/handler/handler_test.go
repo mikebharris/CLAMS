@@ -16,7 +16,7 @@ type SpyingAttendeesStore struct {
 	attendees *[]attendee.Attendee
 }
 
-func (s SpyingAttendeesStore) Store(ctx context.Context, attendee attendee.Attendee) error {
+func (s SpyingAttendeesStore) Store(attendee attendee.Attendee) error {
 	if attendee == anotherAttendee() {
 		return errors.New("some error")
 	}

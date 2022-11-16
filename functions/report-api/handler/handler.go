@@ -13,7 +13,7 @@ var headers = map[string]string{
 }
 
 type IAttendeesStore interface {
-	GetAllAttendees(context.Context) ([]attendee.Attendee, error)
+	GetAllAttendees() ([]attendee.Attendee, error)
 }
 
 type Handler struct {
@@ -21,7 +21,7 @@ type Handler struct {
 }
 
 func (h Handler) HandleRequest(ctx context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	attendees, err := h.AttendeesStore.GetAllAttendees(ctx)
+	attendees, err := h.AttendeesStore.GetAllAttendees()
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, err
 	}

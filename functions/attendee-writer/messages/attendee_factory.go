@@ -16,7 +16,7 @@ type IClock interface {
 type AttendeeFactory struct {
 }
 
-func (af AttendeeFactory) NewFromMessage(message events.SQSMessage) (attendee.Attendee, error) {
+func (af AttendeeFactory) newFromMessage(message events.SQSMessage) (attendee.Attendee, error) {
 	msg, err := af.jsonToMessageObject(message)
 	if err != nil {
 		return attendee.Attendee{}, fmt.Errorf("reading message %v: %v", message, err)

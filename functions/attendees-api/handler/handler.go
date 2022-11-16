@@ -14,8 +14,8 @@ var headers = map[string]string{
 }
 
 type IAttendeesStore interface {
-	GetAllAttendees(ctx context.Context) ([]attendee.Attendee, error)
-	GetAttendeesWithAuthCode(ctx context.Context, authCode string) ([]attendee.Attendee, error)
+	GetAllAttendees() ([]attendee.Attendee, error)
+	GetAttendeesWithAuthCode(authCode string) ([]attendee.Attendee, error)
 }
 
 type ApiResponse struct {
@@ -32,9 +32,9 @@ func (h Handler) HandleRequest(ctx context.Context, request events.APIGatewayPro
 
 	authCode := request.PathParameters["authCode"]
 	if authCode != "" {
-		attendees, err = h.AttendeesStore.GetAttendeesWithAuthCode(ctx, authCode)
+		attendees, err = h.AttendeesStore.GetAttendeesWithAuthCode(authCode)
 	} else {
-		attendees, err = h.AttendeesStore.GetAllAttendees(ctx)
+		attendees, err = h.AttendeesStore.GetAllAttendees()
 	}
 
 	if err != nil {
