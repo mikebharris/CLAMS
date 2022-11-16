@@ -3,7 +3,6 @@ package attendee
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
@@ -88,28 +87,35 @@ func Test_shouldReturnNoAttendeesWhenThereAreNoneInTheDatastore(t *testing.T) {
 	assert.Nil(t, response)
 }
 
+type SpyingDynamoClient struct {
+	a *Attendee
+}
+
+func (s SpyingDynamoClient) Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error) {
+	return nil, nil
+}
+
+func (s SpyingDynamoClient) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+	return nil, nil
+}
+
+func (s SpyingDynamoClient) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+	attributevalue.UnmarshalMap(params.Item, s.a)
+	return nil, nil
+}
+
 func TestAttendees_ShouldPutItemInDynamoDbWhenStoreIsCalled(t *testing.T) {
 	// Given
-	ctx := context.Background()
-
-	attendee := Attendee{}
-	marshalMap, _ := attributevalue.MarshalMap(attendee)
-
-	dynamoClient := MockDynamoClient{}
-	dynamoClient.On("PutItem", ctx, mock.Anything).Return(&dynamodb.PutItemOutput{}, nil)
-
-	store := AttendeesStore{Db: &dynamoClient, Table: "some-table"}
+	var attendee Attendee
+	store := AttendeesStore{Db: &SpyingDynamoClient{&attendee}, Table: "some-table"}
 
 	// When
-	err := store.Store(ctx, attendee)
+	err := store.Store(context.Background(), Attendee{AuthCode: "12345", Name: "Frank Spencer"})
 
 	// Then
 	assert.Nil(t, err)
-	dynamoClient.AssertNumberOfCalls(t, "PutItem", 1)
-	dynamoClient.AssertCalled(t, "PutItem", ctx, &dynamodb.PutItemInput{
-		Item:      marshalMap,
-		TableName: aws.String("some-table"),
-	})
+	assert.Equal(t, "Frank Spencer", attendee.Name)
+	assert.Equal(t, "12345", attendee.AuthCode)
 }
 
 func TestAttendees_ShouldReturnErrorIfUnableToPutItemInDynamoDB(t *testing.T) {

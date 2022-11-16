@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"time"
 )
 
 type IDatastore interface {
@@ -73,6 +74,7 @@ func (as *AttendeesStore) toAttendee(record map[string]types.AttributeValue) Att
 }
 
 func (as *AttendeesStore) Store(ctx context.Context, attendee Attendee) error {
+	attendee.CreatedTime = time.Now()
 	marshalMap, _ := attributevalue.MarshalMap(attendee)
 	_, err := as.Db.PutItem(ctx,
 		&dynamodb.PutItemInput{
