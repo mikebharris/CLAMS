@@ -44,7 +44,7 @@ func Test_shouldReturnAttendees(t *testing.T) {
 	}
 
 	// When
-	attendees, err := datastore.GetAllAttendees(context.Background())
+	attendees, err := datastore.GetAllAttendees()
 
 	// Then
 	assert.Nil(t, err)
@@ -63,7 +63,7 @@ func Test_shouldReturnNoAttendeesWhenUnableToScanDynamoDB(t *testing.T) {
 	datastore := AttendeesStore{Db: &mockDynamoClient}
 
 	// When
-	response, err := datastore.GetAllAttendees(context.Background())
+	response, err := datastore.GetAllAttendees()
 
 	// Then
 	assert.Equal(t, fmt.Errorf("fetching attendees from DynamoDB: some dynamo error"), err)
@@ -80,7 +80,7 @@ func Test_shouldReturnNoAttendeesWhenThereAreNoneInTheDatastore(t *testing.T) {
 	datastore := AttendeesStore{Db: &mockDynamoClient}
 
 	// When
-	response, err := datastore.GetAllAttendees(context.Background())
+	response, err := datastore.GetAllAttendees()
 
 	// Then
 	assert.Nil(t, err)
@@ -110,7 +110,7 @@ func TestAttendees_ShouldPutItemInDynamoDbWhenStoreIsCalled(t *testing.T) {
 	store := AttendeesStore{Db: &SpyingDynamoClient{&attendee}, Table: "some-table"}
 
 	// When
-	err := store.Store(context.Background(), Attendee{AuthCode: "12345", Name: "Frank Spencer"})
+	err := store.Store(Attendee{AuthCode: "12345", Name: "Frank Spencer"})
 
 	// Then
 	assert.Nil(t, err)
@@ -120,15 +120,13 @@ func TestAttendees_ShouldPutItemInDynamoDbWhenStoreIsCalled(t *testing.T) {
 
 func TestAttendees_ShouldReturnErrorIfUnableToPutItemInDynamoDB(t *testing.T) {
 	// Given
-	ctx := context.Background()
-
 	dynamoClient := MockDynamoClient{}
-	dynamoClient.On("PutItem", ctx, mock.Anything).Return(&dynamodb.PutItemOutput{}, fmt.Errorf("some dynamo error"))
+	dynamoClient.On("PutItem", mock.Anything, mock.Anything).Return(&dynamodb.PutItemOutput{}, fmt.Errorf("some dynamo error"))
 
 	store := AttendeesStore{Db: &dynamoClient, Table: "some-table"}
 
 	// When
-	err := store.Store(ctx, Attendee{})
+	err := store.Store(Attendee{})
 
 	// Then
 	assert.NotNil(t, err)

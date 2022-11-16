@@ -21,8 +21,8 @@ type AttendeesStore struct {
 	Table string
 }
 
-func (as *AttendeesStore) GetAttendeesWithAuthCode(ctx context.Context, authCode string) ([]Attendee, error) {
-	record, err := as.Db.GetItem(ctx, &dynamodb.GetItemInput{
+func (as *AttendeesStore) GetAttendeesWithAuthCode(authCode string) ([]Attendee, error) {
+	record, err := as.Db.GetItem(context.Background(), &dynamodb.GetItemInput{
 		TableName: aws.String(as.Table),
 		Key: map[string]types.AttributeValue{
 			"AuthCode": &types.AttributeValueMemberS{Value: authCode},
@@ -45,8 +45,8 @@ func (as *AttendeesStore) GetAttendeesWithAuthCode(ctx context.Context, authCode
 	return attendees, nil
 }
 
-func (as *AttendeesStore) GetAllAttendees(ctx context.Context) ([]Attendee, error) {
-	records, err := as.Db.Scan(ctx, &dynamodb.ScanInput{
+func (as *AttendeesStore) GetAllAttendees() ([]Attendee, error) {
+	records, err := as.Db.Scan(context.Background(), &dynamodb.ScanInput{
 		TableName: aws.String(as.Table),
 	})
 	if err != nil {
@@ -73,10 +73,10 @@ func (as *AttendeesStore) toAttendee(record map[string]types.AttributeValue) Att
 	return attendee
 }
 
-func (as *AttendeesStore) Store(ctx context.Context, attendee Attendee) error {
+func (as *AttendeesStore) Store(attendee Attendee) error {
 	attendee.CreatedTime = time.Now()
 	marshalMap, _ := attributevalue.MarshalMap(attendee)
-	_, err := as.Db.PutItem(ctx,
+	_, err := as.Db.PutItem(context.Background(),
 		&dynamodb.PutItemInput{
 			Item:      marshalMap,
 			TableName: aws.String(as.Table),
