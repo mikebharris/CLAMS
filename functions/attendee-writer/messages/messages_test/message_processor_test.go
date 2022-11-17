@@ -11,15 +11,6 @@ import (
 	"testing"
 )
 
-type MockAttendeesStore struct {
-	mock.Mock
-}
-
-func (s *MockAttendeesStore) Store(attendee attendee.Attendee) error {
-	args := s.Called(attendee)
-	return args.Error(0)
-}
-
 func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	// Given
 	mockAttendeesStore := MockAttendeesStore{}
