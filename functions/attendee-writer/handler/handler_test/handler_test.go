@@ -10,6 +10,8 @@ import (
 	"testing"
 )
 
+//TODO: check that if one message fails, another is still processed
+
 func Test_ShouldPutMessageProcessingFailuresInBatchItemFailures(t *testing.T) {
 	// Given
 	ctx := context.Background()
