@@ -1,4 +1,4 @@
-package attendee
+package attendees_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/mikebharris/CLAMS/attendee"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -38,7 +39,7 @@ func Test_shouldReturnAttendees(t *testing.T) {
 			Items: []map[string]types.AttributeValue{{"AuthCode": &types.AttributeValueMemberS{Value: "12345"}}},
 		}, nil)
 
-	datastore := AttendeesStore{
+	datastore := attendee.AttendeesStore{
 		Db:    &mockDynamoClient,
 		Table: "some-table",
 	}
@@ -48,7 +49,7 @@ func Test_shouldReturnAttendees(t *testing.T) {
 
 	// Then
 	assert.Nil(t, err)
-	assert.Equal(t, []Attendee{{
+	assert.Equal(t, []attendee.Attendee{{
 		AuthCode: "12345",
 	}}, attendees)
 }
@@ -60,7 +61,7 @@ func Test_shouldReturnNoAttendeesWhenUnableToScanDynamoDB(t *testing.T) {
 		On("Scan", mock.Anything).
 		Return(&dynamodb.ScanOutput{}, fmt.Errorf("some dynamo error"))
 
-	datastore := AttendeesStore{Db: &mockDynamoClient}
+	datastore := attendee.AttendeesStore{Db: &mockDynamoClient}
 
 	// When
 	response, err := datastore.GetAllAttendees()
@@ -77,7 +78,7 @@ func Test_shouldReturnNoAttendeesWhenThereAreNoneInTheDatastore(t *testing.T) {
 		On("Scan", mock.Anything).
 		Return(&dynamodb.ScanOutput{}, nil)
 
-	datastore := AttendeesStore{Db: &mockDynamoClient}
+	datastore := attendee.AttendeesStore{Db: &mockDynamoClient}
 
 	// When
 	response, err := datastore.GetAllAttendees()
@@ -88,7 +89,7 @@ func Test_shouldReturnNoAttendeesWhenThereAreNoneInTheDatastore(t *testing.T) {
 }
 
 type SpyingDynamoClient struct {
-	a *Attendee
+	a *attendee.Attendee
 }
 
 func (s SpyingDynamoClient) Scan(ctx context.Context, params *dynamodb.ScanInput, optFns ...func(input *dynamodb.Options)) (*dynamodb.ScanOutput, error) {
@@ -106,16 +107,16 @@ func (s SpyingDynamoClient) PutItem(ctx context.Context, params *dynamodb.PutIte
 
 func TestAttendees_ShouldPutItemInDynamoDbWhenStoreIsCalled(t *testing.T) {
 	// Given
-	var attendee Attendee
-	store := AttendeesStore{Db: &SpyingDynamoClient{&attendee}, Table: "some-table"}
+	var anAttendee attendee.Attendee
+	store := attendee.AttendeesStore{Db: &SpyingDynamoClient{&anAttendee}, Table: "some-table"}
 
 	// When
-	err := store.Store(Attendee{AuthCode: "12345", Name: "Frank Spencer"})
+	err := store.Store(attendee.Attendee{AuthCode: "12345", Name: "Frank Spencer"})
 
 	// Then
 	assert.Nil(t, err)
-	assert.Equal(t, "Frank Spencer", attendee.Name)
-	assert.Equal(t, "12345", attendee.AuthCode)
+	assert.Equal(t, "Frank Spencer", anAttendee.Name)
+	assert.Equal(t, "12345", anAttendee.AuthCode)
 }
 
 func TestAttendees_ShouldReturnErrorIfUnableToPutItemInDynamoDB(t *testing.T) {
@@ -123,10 +124,10 @@ func TestAttendees_ShouldReturnErrorIfUnableToPutItemInDynamoDB(t *testing.T) {
 	dynamoClient := MockDynamoClient{}
 	dynamoClient.On("PutItem", mock.Anything, mock.Anything).Return(&dynamodb.PutItemOutput{}, fmt.Errorf("some dynamo error"))
 
-	store := AttendeesStore{Db: &dynamoClient, Table: "some-table"}
+	store := attendee.AttendeesStore{Db: &dynamoClient, Table: "some-table"}
 
 	// When
-	err := store.Store(Attendee{})
+	err := store.Store(attendee.Attendee{})
 
 	// Then
 	assert.NotNil(t, err)

@@ -1,6 +1,8 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/aws/aws-lambda-go v1.28.0 h1:fZiik1PZqW2IyAN4rj+Y0UBaO1IDFlsNo9Zz/XnArK4=
 github.com/aws/aws-lambda-go v1.28.0/go.mod h1:jJmlefzPfGnckuHdXX7/80O3BvUUi12XOkbv4w9SGLU=
+github.com/aws/aws-lambda-go v1.35.0 h1:iocVDy5Cw5SCRrKOPHwarkdFwwy48OkfmHoE6SJ3ATg=
+github.com/aws/aws-lambda-go v1.35.0/go.mod h1:jwFe2KmMsHmffA1X2R09hH6lFzJQxzI8qK17ewzbQMM=
 github.com/aws/aws-sdk-go-v2 v1.15.0/go.mod h1:lJYcuZZEHWNIb6ugJjbQY1fykdoobWbOS7kJYb4APoI=
 github.com/aws/aws-sdk-go-v2 v1.17.1 h1:02c72fDJr87N8RAC2s3Qu0YuvMRZKNZJ9F+lAehCazk=
 github.com/aws/aws-sdk-go-v2 v1.17.1/go.mod h1:JLnGeGONAyi2lWXI1p0PCIOIy333JMVK1U7Hf0aRFLw=
@@ -49,10 +51,6 @@ github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9Y
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=
 github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGwWFoC7ycTf1rcQZHOlsJ6N8=
 github.com/jmespath/go-jmespath/internal/testify v1.5.1/go.mod h1:L3OGu8Wl2/fWfCI6z80xFu9LTZmf1ZRjMHUOPmWr69U=
-github.com/mikebharris/CLAMS v0.0.0-20221026205356-b667cc601fe0 h1:+kjhFYPZ3Puri4pMzn3LrPJ+wSs+si7FBq4t1DuR4zw=
-github.com/mikebharris/CLAMS v0.0.0-20221026205356-b667cc601fe0/go.mod h1:eR/tPSNJZHh7qtoEAlr4iVHH2A7HM+Bpp8E+l4+YcuY=
-github.com/mikebharris/CLAMS v0.0.0-20221116192726-441978e88753 h1:584IsEvk5bDUlML8lqMnST6uFQXo4nMQr+UlQd1NZZ8=
-github.com/mikebharris/CLAMS v0.0.0-20221116192726-441978e88753/go.mod h1:eR/tPSNJZHh7qtoEAlr4iVHH2A7HM+Bpp8E+l4+YcuY=
 github.com/mikebharris/CLAMS v0.0.0-20221116195928-d2040c66fe3c h1:2HV574qh+HBN699F/p6bZCfU2Okyypl3jYmTkTPbllw=
 github.com/mikebharris/CLAMS v0.0.0-20221116195928-d2040c66fe3c/go.mod h1:eR/tPSNJZHh7qtoEAlr4iVHH2A7HM+Bpp8E+l4+YcuY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

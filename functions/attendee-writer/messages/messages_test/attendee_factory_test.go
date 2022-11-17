@@ -1,6 +1,11 @@
-package messages
+package messages_test
 
 import (
+	"attendee-writer/messages"
+	"encoding/json"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/mikebharris/CLAMS/attendee"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -65,10 +70,22 @@ func Test_AttendeeFactory_computeNights(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			af := &AttendeeFactory{}
-			if got := af.computeNights(tt.args.arrival, tt.args.stayingLate); got != tt.want {
-				t.Errorf("computeNights() = %v, want %v", got, tt.want)
-			}
+			// Given
+			boxForSpyToPutStoredAttendeesIn := &[]attendee.Attendee{}
+
+			mp := messages.MessageProcessor{AttendeesStore: spyingAttendeesStore{boxForSpyToPutStoredAttendeesIn}}
+
+			body, _ := json.Marshal(messages.Message{ArrivalDay: tt.args.arrival, StayingLate: tt.args.stayingLate})
+
+			// When
+			mp.ProcessMessage(events.SQSMessage{Body: string(body)})
+
+			// Then
+			assert.Equal(t, []attendee.Attendee{{
+				ArrivalDay:     tt.args.arrival,
+				NumberOfNights: tt.want,
+				StayingLate:    tt.args.stayingLate,
+			}}, *boxForSpyToPutStoredAttendeesIn)
 		})
 	}
 }
