@@ -3,7 +3,7 @@ module attendee-writer
 go 1.18
 
 require (
-	github.com/aws/aws-lambda-go v1.28.0
+	github.com/aws/aws-lambda-go v1.35.0
 	github.com/aws/aws-sdk-go-v2 v1.17.1
 	github.com/aws/aws-sdk-go-v2/config v1.15.0
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.17.3

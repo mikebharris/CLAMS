@@ -1,6 +1,7 @@
-package messages
+package messages_test
 
 import (
+	"attendee-writer/messages"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
@@ -23,9 +24,9 @@ func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	// Given
 	mockAttendeesStore := MockAttendeesStore{}
 	mockAttendeesStore.On("Store", mock.Anything).Return(nil)
-	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore}
+	mp := messages.MessageProcessor{AttendeesStore: &mockAttendeesStore}
 
-	body, _ := json.Marshal(Message{Name: "Frank Ostrowski"})
+	body, _ := json.Marshal(messages.Message{Name: "Frank Ostrowski"})
 
 	// When
 	err := mp.ProcessMessage(events.SQSMessage{Body: string(body)})
@@ -45,10 +46,10 @@ func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
 	mockAttendeesStore := MockAttendeesStore{}
 	mockAttendeesStore.On("Store", mock.Anything).Return(fmt.Errorf("some storage error"))
 
-	mp := MessageProcessor{AttendeesStore: &mockAttendeesStore}
+	mp := messages.MessageProcessor{AttendeesStore: &mockAttendeesStore}
 
 	// When
-	body, _ := json.Marshal(Message{})
+	body, _ := json.Marshal(messages.Message{})
 	err := mp.ProcessMessage(events.SQSMessage{Body: string(body)})
 
 	// Then
@@ -59,7 +60,7 @@ func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
 
 func Test_processMessage_ShouldReturnErrorIfUnableToParseMessage(t *testing.T) {
 	// Given
-	mp := MessageProcessor{AttendeesStore: &attendee.AttendeesStore{}}
+	mp := messages.MessageProcessor{AttendeesStore: &attendee.AttendeesStore{}}
 
 	// When
 	err := mp.ProcessMessage(events.SQSMessage{Body: ""})

@@ -36,7 +36,7 @@ func (af AttendeeFactory) newFromMessage(message events.SQSMessage) (attendee.At
 			DatePaid:    msg.DatePaid,
 		},
 		ArrivalDay:     msg.ArrivalDay,
-		NumberOfNights: af.computeNights(msg.ArrivalDay, msg.StayingLate),
+		NumberOfNights: af.ComputeNights(msg.ArrivalDay, msg.StayingLate),
 		StayingLate:    msg.StayingLate,
 	}
 	return a, nil
@@ -50,7 +50,7 @@ func (af AttendeeFactory) jsonToMessageObject(message events.SQSMessage) (*Messa
 	return &r, nil
 }
 
-func (af AttendeeFactory) computeNights(arrival string, stayingLate string) int {
+func (af AttendeeFactory) ComputeNights(arrival string, stayingLate string) int {
 	var nights int
 
 	if strings.Contains(arrival, "Wednesday") {

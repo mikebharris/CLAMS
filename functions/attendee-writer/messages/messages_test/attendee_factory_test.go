@@ -1,6 +1,7 @@
-package messages
+package messages_test
 
 import (
+	"attendee-writer/messages"
 	"testing"
 )
 
@@ -65,8 +66,8 @@ func Test_AttendeeFactory_computeNights(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			af := &AttendeeFactory{}
-			if got := af.computeNights(tt.args.arrival, tt.args.stayingLate); got != tt.want {
+			af := &messages.AttendeeFactory{}
+			if got := af.ComputeNights(tt.args.arrival, tt.args.stayingLate); got != tt.want {
 				t.Errorf("computeNights() = %v, want %v", got, tt.want)
 			}
 		})
