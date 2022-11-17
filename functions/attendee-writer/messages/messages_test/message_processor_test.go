@@ -7,37 +7,25 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/mikebharris/CLAMS/attendee"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"testing"
 )
 
 func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	// Given
-	mockAttendeesStore := MockAttendeesStore{}
-	mockAttendeesStore.On("Store", mock.Anything).Return(nil)
-	mp := messages.MessageProcessor{AttendeesStore: &mockAttendeesStore}
+	boxForSpyToPutStoredAttendeesIn := &[]attendee.Attendee{}
 
-	body, _ := json.Marshal(messages.Message{Name: "Frank Ostrowski"})
+	mp := messages.MessageProcessor{AttendeesStore: spyingAttendeesStore{boxForSpyToPutStoredAttendeesIn}}
 
 	// When
-	err := mp.ProcessMessage(events.SQSMessage{Body: string(body)})
+	mp.ProcessMessage(aMessage())
 
 	// Then
-	assert.Nil(t, err)
-	mockAttendeesStore.AssertCalled(t, "Store",
-		attendee.Attendee{
-			Name:           "Frank Ostrowski",
-			NumberOfNights: 5,
-		},
-	)
+	assert.Equal(t, []attendee.Attendee{anAttendee()}, *boxForSpyToPutStoredAttendeesIn)
 }
 
 func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
 	// Given
-	mockAttendeesStore := MockAttendeesStore{}
-	mockAttendeesStore.On("Store", mock.Anything).Return(fmt.Errorf("some storage error"))
-
-	mp := messages.MessageProcessor{AttendeesStore: &mockAttendeesStore}
+	mp := messages.MessageProcessor{AttendeesStore: failingAttendeeStore{}}
 
 	// When
 	body, _ := json.Marshal(messages.Message{})
@@ -46,7 +34,6 @@ func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
 	// Then
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Errorf("storing attendee in datastore: some storage error"), err)
-	mockAttendeesStore.AssertCalled(t, "Store", mock.Anything)
 }
 
 func Test_processMessage_ShouldReturnErrorIfUnableToParseMessage(t *testing.T) {
@@ -58,22 +45,6 @@ func Test_processMessage_ShouldReturnErrorIfUnableToParseMessage(t *testing.T) {
 
 	// Then
 	assert.NotNil(t, err)
-}
-
-func Test_processMessage_ShouldStoreAttendeeWithCorrectFieldValues(t *testing.T) {
-	// Given
-	mockAttendeesStore := MockAttendeesStore{}
-	mockAttendeesStore.On("Store", mock.Anything).Return(nil)
-	mp := messages.MessageProcessor{AttendeesStore: &mockAttendeesStore}
-
-	// When
-	mp.ProcessMessage(aMessage())
-
-	// Then
-	mockAttendeesStore.AssertCalled(t, "Store",
-		anAttendee(),
-	)
-
 }
 
 func aMessage() events.SQSMessage {

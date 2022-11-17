@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/mikebharris/CLAMS/attendee"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"testing"
 )
 
@@ -72,24 +71,21 @@ func Test_AttendeeFactory_computeNights(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Given
-			mockAttendeesStore := MockAttendeesStore{}
-			mockAttendeesStore.On("Store", mock.Anything).Return(nil)
-			mp := messages.MessageProcessor{AttendeesStore: &mockAttendeesStore}
+			boxForSpyToPutStoredAttendeesIn := &[]attendee.Attendee{}
+
+			mp := messages.MessageProcessor{AttendeesStore: spyingAttendeesStore{boxForSpyToPutStoredAttendeesIn}}
 
 			body, _ := json.Marshal(messages.Message{ArrivalDay: tt.args.arrival, StayingLate: tt.args.stayingLate})
 
 			// When
-			err := mp.ProcessMessage(events.SQSMessage{Body: string(body)})
+			mp.ProcessMessage(events.SQSMessage{Body: string(body)})
 
 			// Then
-			assert.Nil(t, err)
-			mockAttendeesStore.AssertCalled(t, "Store",
-				attendee.Attendee{
-					ArrivalDay:     tt.args.arrival,
-					NumberOfNights: tt.want,
-					StayingLate:    tt.args.stayingLate,
-				},
-			)
+			assert.Equal(t, []attendee.Attendee{{
+				ArrivalDay:     tt.args.arrival,
+				NumberOfNights: tt.want,
+				StayingLate:    tt.args.stayingLate,
+			}}, *boxForSpyToPutStoredAttendeesIn)
 		})
 	}
 }

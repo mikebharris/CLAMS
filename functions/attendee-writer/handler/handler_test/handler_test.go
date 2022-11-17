@@ -10,6 +10,7 @@ import (
 	"testing"
 )
 
+// TODO: check that it processes multiple messages
 //TODO: check that if one message fails, another is still processed
 
 func Test_ShouldPutMessageProcessingFailuresInBatchItemFailures(t *testing.T) {
