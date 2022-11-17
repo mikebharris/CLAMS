@@ -1,6 +1,7 @@
-package handler
+package handler_test
 
 import (
+	"attendee-writer/handler"
 	"attendee-writer/messages"
 	"context"
 	"encoding/json"
@@ -29,7 +30,7 @@ func Test_ShouldProcessMessagesPuttingFailuresOnInBatchItemFailures(t *testing.T
 	ctx := context.Background()
 
 	var attendees []attendee.Attendee
-	h := Handler{
+	h := handler.Handler{
 		MessageProcessor: messages.MessageProcessor{
 			AttendeesStore: &SpyingAttendeesStore{&attendees},
 		},
@@ -46,7 +47,7 @@ func Test_ShouldProcessMessagesPuttingFailuresOnInBatchItemFailures(t *testing.T
 
 func Test_handleRequest_ShouldReturnErrorIfThereSqsEventContainsNoMessages(t *testing.T) {
 	// Given
-	h := Handler{
+	h := handler.Handler{
 		MessageProcessor: messages.MessageProcessor{},
 	}
 
