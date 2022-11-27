@@ -1,12 +1,12 @@
 package main
 
 import (
+	"attendee-writer/attendee"
 	"attendee-writer/handler"
 	"attendee-writer/messages"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/mikebharris/CLAMS/attendee"
 	"os"
 )
 

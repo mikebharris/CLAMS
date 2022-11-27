@@ -1,9 +1,9 @@
 package messages
 
 import (
+	"attendee-writer/attendee"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/mikebharris/CLAMS/attendee"
 	"log"
 )
 

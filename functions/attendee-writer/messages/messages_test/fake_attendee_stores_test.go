@@ -1,8 +1,8 @@
 package messages_test
 
 import (
+	"attendee-writer/attendee"
 	"fmt"
-	"github.com/mikebharris/CLAMS/attendee"
 )
 
 type spyingAttendeesStore struct {

@@ -1,11 +1,11 @@
 package messages_test
 
 import (
+	"attendee-writer/attendee"
 	"attendee-writer/messages"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/mikebharris/CLAMS/attendee"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
