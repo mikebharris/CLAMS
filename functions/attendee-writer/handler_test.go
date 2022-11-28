@@ -1,7 +1,6 @@
-package handler_test
+package main
 
 import (
-	"attendee-writer/handler"
 	"attendee-writer/messages"
 	"context"
 	"fmt"
@@ -17,7 +16,7 @@ func Test_ShouldPutMessageProcessingFailuresInBatchItemFailures(t *testing.T) {
 	// Given
 	ctx := context.Background()
 
-	h := handler.Handler{
+	h := Handler{
 		MessageProcessor: messageProcessorThatFailsToProcessMessage{},
 	}
 
@@ -33,7 +32,7 @@ func Test_ShouldPutMessageProcessingFailuresInBatchItemFailures(t *testing.T) {
 
 func Test_handleRequest_ShouldReturnErrorIfThereSqsEventContainsNoMessages(t *testing.T) {
 	// Given
-	h := handler.Handler{
+	h := Handler{
 		MessageProcessor: messages.MessageProcessor{},
 	}
 

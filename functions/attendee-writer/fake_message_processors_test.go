@@ -1,4 +1,4 @@
-package handler_test
+package main
 
 import (
 	"errors"
@@ -7,6 +7,6 @@ import (
 
 type messageProcessorThatFailsToProcessMessage struct{}
 
-func (m messageProcessorThatFailsToProcessMessage) ProcessMessage(msg events.SQSMessage) error {
+func (m messageProcessorThatFailsToProcessMessage) ProcessMessage(_ events.SQSMessage) error {
 	return errors.New("")
 }
