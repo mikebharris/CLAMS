@@ -3,9 +3,7 @@ package messages_test
 import (
 	"attendee-writer/attendee"
 	"attendee-writer/messages"
-	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -17,10 +15,24 @@ func Test_processMessage_ShouldStoreMessage(t *testing.T) {
 	mp := messages.MessageProcessor{AttendeesStore: spyingAttendeesStore{boxForSpyToPutStoredAttendeesIn}}
 
 	// When
-	mp.ProcessMessage(aMessage())
+	_ = mp.ProcessMessage(aMessage())
 
 	// Then
-	assert.Equal(t, []attendee.Attendee{anAttendee()}, *boxForSpyToPutStoredAttendeesIn)
+	assertValidAttendeeReturned(t, anAttendee(), *boxForSpyToPutStoredAttendeesIn)
+}
+
+func assertValidAttendeeReturned(t *testing.T, a attendee.Attendee, b []attendee.Attendee) {
+	assert.Equal(t, a.ArrivalDay, b[0].ArrivalDay)
+	assert.Equal(t, a.StayingLate, b[0].StayingLate)
+	assert.Equal(t, a.Name, b[0].Name)
+	assert.Equal(t, a.NumberOfNights, b[0].NumberOfNights)
+	assert.Equal(t, a.NumberOfKids, b[0].NumberOfKids)
+	assert.Equal(t, a.AuthCode, b[0].AuthCode)
+	assert.Equal(t, a.Email, b[0].Email)
+	assert.Equal(t, a.Diet, b[0].Diet)
+	assert.Equal(t, a.Telephone, b[0].Telephone)
+	assert.Equal(t, a.Financials, b[0].Financials)
+	assert.NotNil(t, b[0].CreatedTime)
 }
 
 func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
@@ -28,26 +40,14 @@ func Test_processMessage_ShouldReturnErrorIfUnableToStoreMessage(t *testing.T) {
 	mp := messages.MessageProcessor{AttendeesStore: failingAttendeeStore{}}
 
 	// When
-	body, _ := json.Marshal(messages.Message{})
-	err := mp.ProcessMessage(events.SQSMessage{Body: string(body)})
+	err := mp.ProcessMessage(messages.Message{})
 
 	// Then
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Errorf("storing attendee in datastore: some storage error"), err)
 }
 
-func Test_processMessage_ShouldReturnErrorIfUnableToParseMessage(t *testing.T) {
-	// Given
-	mp := messages.MessageProcessor{AttendeesStore: &attendee.AttendeesStore{}}
-
-	// When
-	err := mp.ProcessMessage(events.SQSMessage{Body: ""})
-
-	// Then
-	assert.NotNil(t, err)
-}
-
-func aMessage() events.SQSMessage {
+func aMessage() messages.Message {
 	message := messages.Message{
 		Name:         "Frank Ostrowski",
 		Email:        "frank.o@gfa.de",
@@ -61,8 +61,7 @@ func aMessage() events.SQSMessage {
 		StayingLate:  "No",
 		NumberOfKids: 1,
 	}
-	body, _ := json.Marshal(message)
-	return events.SQSMessage{MessageId: "abcdef", Body: string(body)}
+	return message
 }
 
 func anAttendee() attendee.Attendee {

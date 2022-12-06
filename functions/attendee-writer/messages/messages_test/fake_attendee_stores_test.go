@@ -9,8 +9,8 @@ type spyingAttendeesStore struct {
 	attendees *[]attendee.Attendee
 }
 
-func (s spyingAttendeesStore) Store(attendee attendee.Attendee) error {
-	*s.attendees = append(*s.attendees, attendee)
+func (s spyingAttendeesStore) Store(a interface{}) error {
+	*s.attendees = append(*s.attendees, a.(attendee.Attendee))
 	return nil
 }
 
@@ -18,6 +18,6 @@ type failingAttendeeStore struct {
 	attendees *[]attendee.Attendee
 }
 
-func (s failingAttendeeStore) Store(attendee attendee.Attendee) error {
+func (s failingAttendeeStore) Store(_ interface{}) error {
 	return fmt.Errorf("some storage error")
 }

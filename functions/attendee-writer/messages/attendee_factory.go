@@ -2,52 +2,33 @@ package messages
 
 import (
 	"attendee-writer/attendee"
-	"encoding/json"
-	"fmt"
-	"github.com/aws/aws-lambda-go/events"
 	"strings"
 	"time"
 )
 
-type IClock interface {
-	Now() time.Time
-}
-
 type AttendeeFactory struct {
 }
 
-func (af AttendeeFactory) newFromMessage(message events.SQSMessage) (attendee.Attendee, error) {
-	msg, err := af.jsonToMessageObject(message)
-	if err != nil {
-		return attendee.Attendee{}, fmt.Errorf("reading message %v: %v", message, err)
-	}
-
+func (af AttendeeFactory) newFromMessage(message Message) (attendee.Attendee, error) {
 	a := attendee.Attendee{
-		AuthCode:     msg.AuthCode,
-		Name:         msg.Name,
-		Email:        msg.Email,
-		Telephone:    msg.Telephone,
-		NumberOfKids: msg.NumberOfKids,
-		Diet:         msg.Diet,
+		AuthCode:     message.AuthCode,
+		Name:         message.Name,
+		Email:        message.Email,
+		Telephone:    message.Telephone,
+		NumberOfKids: message.NumberOfKids,
+		Diet:         message.Diet,
 		Financials: attendee.Financials{
-			AmountToPay: msg.AmountToPay,
-			AmountPaid:  msg.AmountPaid,
-			AmountDue:   msg.AmountToPay - msg.AmountPaid,
-			DatePaid:    msg.DatePaid,
+			AmountToPay: message.AmountToPay,
+			AmountPaid:  message.AmountPaid,
+			AmountDue:   message.AmountToPay - message.AmountPaid,
+			DatePaid:    message.DatePaid,
 		},
-		ArrivalDay:     msg.ArrivalDay,
-		NumberOfNights: af.computeNights(msg.ArrivalDay, msg.StayingLate),
-		StayingLate:    msg.StayingLate,
+		ArrivalDay:     message.ArrivalDay,
+		NumberOfNights: af.computeNights(message.ArrivalDay, message.StayingLate),
+		StayingLate:    message.StayingLate,
+		CreatedTime:    time.Now(),
 	}
 	return a, nil
-}
-
-func (af AttendeeFactory) jsonToMessageObject(message events.SQSMessage) (*Message, error) {
-	r := Message{}
-	if err := json.Unmarshal([]byte(message.Body), &r); err != nil {
-		return nil, fmt.Errorf("unmarshalling message body %s: %v", message.Body, err)
-	}
-	return &r, nil
 }
 
 func (af AttendeeFactory) computeNights(arrival string, stayingLate string) int {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"attendee-writer/attendee"
 	"attendee-writer/messages"
 	"context"
 	"fmt"
@@ -12,22 +13,30 @@ import (
 // TODO: check that it processes multiple messages
 //TODO: check that if one message fails, another is still processed
 
+type failingAttendeeStore struct {
+	attendees *[]attendee.Attendee
+}
+
+func (s failingAttendeeStore) Store(_ interface{}) error {
+	return fmt.Errorf("some storage error")
+}
+
 func Test_ShouldPutMessageProcessingFailuresInBatchItemFailures(t *testing.T) {
 	// Given
 	ctx := context.Background()
 
 	h := Handler{
-		MessageProcessor: messageProcessorThatFailsToProcessMessage{},
+		MessageProcessor: messages.MessageProcessor{AttendeesStore: failingAttendeeStore{}},
 	}
 
 	// When
 	aMessage := events.SQSMessage{MessageId: "abcdef"}
-	request, _ := h.HandleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{aMessage}})
+	response, _ := h.HandleRequest(ctx, events.SQSEvent{Records: []events.SQSMessage{aMessage}})
 
 	// Then
 	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: []events.SQSBatchItemFailure{
 		{ItemIdentifier: aMessage.MessageId},
-	}}, request)
+	}}, response)
 }
 
 func Test_handleRequest_ShouldReturnErrorIfThereSqsEventContainsNoMessages(t *testing.T) {
@@ -42,4 +51,19 @@ func Test_handleRequest_ShouldReturnErrorIfThereSqsEventContainsNoMessages(t *te
 	// Then
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Errorf("sqs event contained no records"), err)
+}
+
+func Test_processMessage_ShouldPutMessageOnBatchItemFailuresIfUnableToParseBody(t *testing.T) {
+	// Given
+	h := Handler{
+		MessageProcessor: messages.MessageProcessor{},
+	}
+
+	// When
+	response, _ := h.HandleRequest(context.Background(), events.SQSEvent{Records: []events.SQSMessage{{MessageId: "12345", Body: ""}}})
+
+	// Then
+	assert.Equal(t, events.SQSEventResponse{BatchItemFailures: []events.SQSBatchItemFailure{
+		{ItemIdentifier: "12345"},
+	}}, response)
 }
