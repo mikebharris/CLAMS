@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"clams/attendee"
 	"context"
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/mikebharris/CLAMS/attendee"
 	"net/http"
 )
 

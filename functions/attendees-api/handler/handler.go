@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"clams/attendee"
 	"context"
 	"encoding/json"
-	"github.com/mikebharris/CLAMS/attendee"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"

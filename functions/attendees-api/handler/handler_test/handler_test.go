@@ -1,12 +1,12 @@
 package handler_test
 
 import (
-	"attendees-api/handler"
+	"clams/attendee"
+	"clams/attendees-api/handler"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/mikebharris/CLAMS/attendee"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/http"
