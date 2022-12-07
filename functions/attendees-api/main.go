@@ -3,6 +3,7 @@ package main
 import (
 	"clams/attendee"
 	"clams/attendees-api/handler"
+	"clams/awscfg"
 	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -10,10 +11,7 @@ import (
 )
 
 func main() {
-	awsConfig, err := newAwsConfig("us-east-1")
-	if err != nil {
-		panic(err)
-	}
+	awsConfig := awscfg.GetAwsConfig(dynamodb.ServiceID, os.Getenv("DYNAMO_ENDPOINT_OVERRIDE"))
 
 	lambdaHandler := handler.Handler{
 		AttendeesStore: &attendee.AttendeesStore{

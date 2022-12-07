@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-lambda-go v1.36.0
 	github.com/aws/aws-sdk-go-v2 v1.17.2
 	github.com/aws/aws-sdk-go-v2/config v1.18.4
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.2
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.17.8
 	github.com/mikebharris/CLAMS v0.0.0-20221206161616-2880f138bea4
 	github.com/stretchr/testify v1.8.1
@@ -13,7 +14,6 @@ require (
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.4 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.2 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.20 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.26 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.20 // indirect

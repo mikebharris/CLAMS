@@ -1,7 +1,7 @@
 package aws_config_test
 
 import (
-	"clams/attendee-writer/awscfg"
+	"clams/awscfg"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
