@@ -1,8 +1,8 @@
 package main
 
 import (
-	"attendee-writer/dynds"
-	"attendee-writer/messages"
+	"clams/attendee-writer/dynds"
+	"clams/attendee-writer/messages"
 	"github.com/aws/aws-lambda-go/lambda"
 	"os"
 )

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"attendee-writer/attendee"
-	"attendee-writer/messages"
+	"clams/attendee"
+	"clams/attendee-writer/messages"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"

@@ -1,8 +1,8 @@
 package messages_test
 
 import (
-	"attendee-writer/attendee"
-	"attendee-writer/messages"
+	"clams/attendee"
+	"clams/attendee-writer/messages"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"

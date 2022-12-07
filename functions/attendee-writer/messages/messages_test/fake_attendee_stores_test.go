@@ -1,7 +1,7 @@
 package messages_test
 
 import (
-	"attendee-writer/attendee"
+	"clams/attendee"
 	"fmt"
 )
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"attendee-writer/messages"
+	"clams/attendee-writer/messages"
 	"errors"
 )
 

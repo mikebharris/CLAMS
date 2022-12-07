@@ -1,7 +1,7 @@
 package dynds
 
 import (
-	"attendee-writer/awscfg"
+	"clams/attendee-writer/awscfg"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"

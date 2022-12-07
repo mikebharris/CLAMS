@@ -1,7 +1,7 @@
 package messages
 
 import (
-	"attendee-writer/attendee"
+	"clams/attendee"
 	"strings"
 	"time"
 )
