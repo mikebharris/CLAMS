@@ -46,6 +46,8 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
                 account_number=account_number,
                 environment=environment)
 
+    print("executing: {c}".format(c=command))
+
     with do_in_directory('terraform'):
         local(command)
 
@@ -75,7 +77,7 @@ def get_api_url() -> str:
 
 
 def build_lambdas():
-    for f in ['attendees-api', 'attendee-writer', 'report-api']:
+    for f in ['attendees-api', 'attendee-writer']:
         lambda_location = 'functions/{function}'.format(function=f)
         print("Building lambda in {l}....".format(l=lambda_location))
         with do_in_directory(lambda_location):

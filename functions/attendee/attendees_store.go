@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"time"
 )
 
 type IDatastore interface {
@@ -21,7 +20,15 @@ type AttendeesStore struct {
 	Table string
 }
 
-func (as *AttendeesStore) GetAttendeesWithAuthCode(authCode string) ([]Attendee, error) {
+func (as *AttendeesStore) GetAttendees(authCode string) ([]Attendee, error) {
+	if authCode == "" {
+		return as.getAllAttendees()
+	} else {
+		return as.getAttendeesWithAuthCode(authCode)
+	}
+}
+
+func (as *AttendeesStore) getAttendeesWithAuthCode(authCode string) ([]Attendee, error) {
 	record, err := as.Db.GetItem(context.Background(), &dynamodb.GetItemInput{
 		TableName: aws.String(as.Table),
 		Key: map[string]types.AttributeValue{
@@ -37,7 +44,7 @@ func (as *AttendeesStore) GetAttendeesWithAuthCode(authCode string) ([]Attendee,
 	}
 
 	var attendees []Attendee
-	attendee := as.toAttendee(record.Item)
+	attendee := toAttendee(record.Item)
 	if err != nil {
 		return nil, fmt.Errorf("marshaling record %v to Attendee{} failed with error: %v", as, err)
 	}
@@ -45,7 +52,7 @@ func (as *AttendeesStore) GetAttendeesWithAuthCode(authCode string) ([]Attendee,
 	return attendees, nil
 }
 
-func (as *AttendeesStore) GetAllAttendees() ([]Attendee, error) {
+func (as *AttendeesStore) getAllAttendees() ([]Attendee, error) {
 	records, err := as.Db.Scan(context.Background(), &dynamodb.ScanInput{
 		TableName: aws.String(as.Table),
 	})
@@ -59,31 +66,16 @@ func (as *AttendeesStore) GetAllAttendees() ([]Attendee, error) {
 
 	var attendees []Attendee
 	for _, r := range records.Items {
-		attendees = append(attendees, as.toAttendee(r))
+		attendees = append(attendees, toAttendee(r))
 	}
 
 	return attendees, nil
 }
 
-func (as *AttendeesStore) toAttendee(record map[string]types.AttributeValue) Attendee {
+func toAttendee(record map[string]types.AttributeValue) Attendee {
 	var attendee Attendee
 	if err := attributevalue.UnmarshalMap(record, &attendee); err != nil {
 		return Attendee{}
 	}
 	return attendee
-}
-
-func (as *AttendeesStore) Store(attendee Attendee) error {
-	attendee.CreatedTime = time.Now()
-	marshalMap, _ := attributevalue.MarshalMap(attendee)
-	_, err := as.Db.PutItem(context.Background(),
-		&dynamodb.PutItemInput{
-			Item:      marshalMap,
-			TableName: aws.String(as.Table),
-		})
-
-	if err != nil {
-		return fmt.Errorf("putting attendee in datastore: %v", err)
-	}
-	return nil
 }

@@ -6,20 +6,19 @@ import (
 )
 
 func TestFeatures(t *testing.T) {
+	var steps steps
+	steps.t = t
 	suite := godog.TestSuite{
+		TestSuiteInitializer: func(ctx *godog.TestSuiteContext) {
+			ctx.BeforeSuite(steps.startContainers)
+			ctx.BeforeSuite(steps.setUpDynamoClient)
+			ctx.AfterSuite(steps.stopContainers)
+		},
 		ScenarioInitializer: func(ctx *godog.ScenarioContext) {
-			var steps steps
-			steps.t = t
-
-			ctx.Before(steps.startContainers)
-			ctx.Before(steps.setUpDynamoClient)
-			ctx.After(steps.stopContainers)
-
 			ctx.Step(`^the Attendee Writer is invoked with an attendee record from BAMS to be processed$`, steps.theAttendeeWriterIsInvokedWithANewAttendeeRecord)
 			ctx.Step(`^the Attendee Writer is invoked with an updated attendee record from BAMS to be processed$`, steps.theAttendeeWriterIsInvokedWithAnUpdatedAttendeeRecord)
-
-			ctx.Step(`^the attendee is added to the Attendees Datastore$`, steps.theAttendeeIsAddedToTheAttendeesDatastore)
-			ctx.Step(`^the attendee is updated in the Attendees Datastore$`, steps.theAttendeeIsUpdatedInTheAttendeesDatastore)
+			ctx.Step(`^an attendee record is added to CLAMS$`, steps.theAttendeeIsAddedToTheAttendeesDatastore)
+			ctx.Step(`^the attendee record is updated in CLAMS$`, steps.theAttendeeIsUpdatedInTheAttendeesDatastore)
 		},
 		Options: &godog.Options{
 			Format:   "pretty",

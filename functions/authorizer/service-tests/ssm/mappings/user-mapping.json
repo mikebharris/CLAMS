@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/",
+    "bodyPatterns" : [
+      {
+        "equalToJson" : {"Name":"/submissions/test/metadata-api/user","WithDecryption":true}
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"Parameter\":{\"ARN\":\"arn:aws:ssm:us-east-2:111122223333:parameter/submissions/test/metadata-api/user\",\"DataType\":\"text\",\"LastModifiedDate\":1582657288.8,\"Name\":\"/submissions/test/metadata-api/user\",\"Type\":\"SecureString\",\"Value\":\"user\",\"Version\":3}}"
+  }
+}

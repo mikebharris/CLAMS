@@ -55,7 +55,7 @@ func main() {
 	fmt.Println("Reading from", *csvFile, "and writing to", *sqsQueue)
 	for row, record := range records {
 		if row == 0 {
-			continue
+			continue // skip row with column headings
 		}
 
 		message := Message{

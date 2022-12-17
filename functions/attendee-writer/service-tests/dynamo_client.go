@@ -39,10 +39,10 @@ type Financials struct {
 	DatePaid    string `json:"DatePaid"`
 }
 
-func newDynamoClient(host string, port int) (DynamoClient, error) {
+func newDynamoClient(host string, port int) DynamoClient {
 	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion("us-east-1"))
 	if err != nil {
-		return DynamoClient{}, err
+		panic(err)
 	}
 
 	endpoint := fmt.Sprintf("http://%s:%d", host, port)
@@ -50,10 +50,10 @@ func newDynamoClient(host string, port int) (DynamoClient, error) {
 		return aws.Endpoint{URL: endpoint}, nil
 	})
 
-	return DynamoClient{dynamodb.NewFromConfig(cfg)}, nil
+	return DynamoClient{dynamodb.NewFromConfig(cfg)}
 }
 
-func (d DynamoClient) createAttendeesTable() error {
+func (d DynamoClient) createAttendeesTable() {
 	input := &dynamodb.CreateTableInput{
 		AttributeDefinitions: []types.AttributeDefinition{
 			{
@@ -75,7 +75,9 @@ func (d DynamoClient) createAttendeesTable() error {
 	}
 
 	_, err := d.dynamoDbHandle.CreateTable(context.Background(), input)
-	return err
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (d DynamoClient) getAttendeeByCode(authCode string) (*Attendee, error) {

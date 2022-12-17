@@ -52,12 +52,12 @@ resource "aws_iam_policy" "attendees_api_iam_policy" {
 }
 
 data "archive_file" "attendees_api_lambda_function_distribution" {
-  source_dir  = "../functions/attendees-api"
+  source_file = "../functions/attendees-api/main"
   output_path = "../functions/attendees-api/${var.product}-attendees-api.zip"
   type        = "zip"
 }
 
-resource "aws_s3_bucket_object" "attendees_api_lambda_function_distribution_bucket_object" {
+resource "aws_s3_object" "attendees_api_lambda_function_distribution_bucket_object" {
   bucket = "${var.account_number}-${var.distribution_bucket}"
   key    = "lambdas/${var.product}-attendees-api/${var.product}-attendees-api.zip"
   source = data.archive_file.attendees_api_lambda_function_distribution.output_path
@@ -69,8 +69,8 @@ resource "aws_lambda_function" "attendees_api_lambda_function" {
   role             = aws_iam_role.attendees_api_iam_role.arn
   handler          = "main"
   runtime          = "go1.x"
-  s3_bucket        = aws_s3_bucket_object.attendees_api_lambda_function_distribution_bucket_object.bucket
-  s3_key           = aws_s3_bucket_object.attendees_api_lambda_function_distribution_bucket_object.key
+  s3_bucket        = aws_s3_object.attendees_api_lambda_function_distribution_bucket_object.bucket
+  s3_key           = aws_s3_object.attendees_api_lambda_function_distribution_bucket_object.key
   source_code_hash = data.archive_file.attendees_api_lambda_function_distribution.output_md5
   timeout          = 60
   memory_size      = 256

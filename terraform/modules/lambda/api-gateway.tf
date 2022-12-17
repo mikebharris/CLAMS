@@ -47,13 +47,6 @@ resource "aws_apigatewayv2_integration" "attendees_api_lambda_http_gateway_integ
   integration_uri = aws_lambda_function.attendees_api_lambda_function.invoke_arn
 }
 
-resource "aws_apigatewayv2_integration" "report_api_lambda_http_gateway_integration" {
-  api_id           = aws_apigatewayv2_api.clams_api_lambda_http_gateway.id
-  integration_type = "AWS_PROXY"
-  integration_method = "POST"
-  integration_uri = aws_lambda_function.report_lambda_function.invoke_arn
-}
-
 resource "aws_apigatewayv2_route" "attendees_api_lambda_http_gateway_route_specific_attendee" {
   api_id    = aws_apigatewayv2_api.clams_api_lambda_http_gateway.id
   route_key = "GET /attendee/{authCode}"
@@ -66,10 +59,10 @@ resource "aws_apigatewayv2_route" "attendees_api_lambda_http_gateway_route_all_a
   target = "integrations/${aws_apigatewayv2_integration.attendees_api_lambda_http_gateway_integration.id}"
 }
 
-resource "aws_apigatewayv2_route" "report_api_lambda_http_gateway_integration_get_method_route" {
+resource "aws_apigatewayv2_route" "attendees_api_lambda_http_gateway_integration_get_report_method_route" {
   api_id    = aws_apigatewayv2_api.clams_api_lambda_http_gateway.id
   route_key = "GET /report"
-  target = "integrations/${aws_apigatewayv2_integration.report_api_lambda_http_gateway_integration.id}"
+  target = "integrations/${aws_apigatewayv2_integration.attendees_api_lambda_http_gateway_integration.id}"
 }
 
 resource "aws_cloudwatch_log_group" "clams_api_http_gateway_log_group" {
@@ -80,14 +73,6 @@ resource "aws_cloudwatch_log_group" "clams_api_http_gateway_log_group" {
 resource "aws_lambda_permission" "attendees_api_http_gateway_lambda_permission" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.attendees_api_lambda_function.function_name
-  principal     = "apigateway.amazonaws.com"
-  statement_id = "AllowExecutionFromAPIGateway"
-  source_arn = "${aws_apigatewayv2_api.clams_api_lambda_http_gateway.execution_arn}/*/*"
-}
-
-resource "aws_lambda_permission" "report_http_gateway_lambda_permission" {
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.report_lambda_function.function_name
   principal     = "apigateway.amazonaws.com"
   statement_id = "AllowExecutionFromAPIGateway"
   source_arn = "${aws_apigatewayv2_api.clams_api_lambda_http_gateway.execution_arn}/*/*"

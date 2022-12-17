@@ -57,24 +57,28 @@ func (c *Containers) Stop() error {
 	return nil
 }
 
-func (c *Containers) GetLambdaLog() (io.ReadCloser, error) {
-	return c.lambdaContainer.Logs(context.Background())
+func (c *Containers) GetLambdaLog() io.ReadCloser {
+	logs, err := c.lambdaContainer.Logs(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	return logs
 }
 
-func (c *Containers) GetLocalhostPort(container testcontainers.Container, port int) (int, error) {
+func (c *Containers) GetLocalhostPort(container testcontainers.Container, port int) int {
 	context := context.Background()
 	mappedPort, err := container.MappedPort(context, nat.Port(fmt.Sprintf("%d/tcp", port)))
 	if err != nil {
-		return 0, err
+		panic(err)
 	}
-	return mappedPort.Int(), nil
+	return mappedPort.Int()
 }
 
-func (c *Containers) GetLocalHostDynamoPort() (int, error) {
+func (c *Containers) GetLocalHostDynamoPort() int {
 	return c.GetLocalhostPort(c.dynamoContainer, 8000)
 }
 
-func (c *Containers) GetLocalHostLambdaPort() (int, error) {
+func (c *Containers) GetLocalHostLambdaPort() int {
 	return c.GetLocalhostPort(c.lambdaContainer, 9001)
 }
 

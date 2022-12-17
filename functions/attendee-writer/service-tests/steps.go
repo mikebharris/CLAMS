@@ -2,7 +2,6 @@ package service_tests
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
@@ -10,8 +9,6 @@ import (
 	"net/http"
 
 	"testing"
-
-	"github.com/cucumber/godog"
 )
 
 type steps struct {
@@ -35,45 +32,29 @@ type Message struct {
 	Diet         string
 }
 
-func (s *steps) startContainers(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
-	err := s.containers.Start()
-	if err != nil {
-		fmt.Printf("startContainers error %s", err)
-		return ctx, err
+func (s *steps) startContainers() {
+	if err := s.containers.Start(); err != nil {
+		panic(err)
 	}
-	return ctx, nil
 }
 
-func (s *steps) setUpDynamoClient(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
-	localDynamoPort, err := s.containers.GetLocalHostDynamoPort()
-	if err != nil {
-		fmt.Printf("setUpDynamoClient error %s", err)
-		return ctx, err
-	}
-
-	s.DynamoClient, err = newDynamoClient("localhost", localDynamoPort)
-	if err != nil {
-		return ctx, err
-	}
-
-	err = s.DynamoClient.createAttendeesTable()
-	return ctx, err
+func (s *steps) setUpDynamoClient() {
+	s.DynamoClient = newDynamoClient("localhost", s.containers.GetLocalHostDynamoPort())
+	s.DynamoClient.createAttendeesTable()
 }
 
-func (s *steps) stopContainers(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+func (s *steps) stopContainers() {
 	fmt.Println("Lambda log:")
-	readCloser, err := s.containers.GetLambdaLog()
+	readCloser := s.containers.GetLambdaLog()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(readCloser)
 	newStr := buf.String()
 	fmt.Println(newStr)
 
 	fmt.Println("Stopping containers")
-	newErr := s.containers.Stop()
-	if newErr != nil && err == nil {
-		err = newErr
+	if err := s.containers.Stop(); err != nil {
+		panic(err)
 	}
-	return ctx, err
 }
 
 func (s *steps) theAttendeeWriterIsInvokedWithANewAttendeeRecord() error {
@@ -112,12 +93,7 @@ func (s *steps) theAttendeeWriterIsInvokedWithAnUpdatedAttendeeRecord() error {
 }
 
 func (s *steps) theLambdaIsInvoked(payload Message) error {
-	localLambdaInvocationPort, err := s.containers.GetLocalHostLambdaPort()
-	if err != nil {
-		return err
-	}
-
-	url := fmt.Sprintf("http://localhost:%d/2015-03-31/functions/myfunction/invocations", localLambdaInvocationPort)
+	url := fmt.Sprintf("http://localhost:%d/2015-03-31/functions/myfunction/invocations", s.containers.GetLocalHostLambdaPort())
 
 	body, err := json.Marshal(payload)
 	if err != nil {

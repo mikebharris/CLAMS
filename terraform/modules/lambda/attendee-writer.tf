@@ -17,12 +17,12 @@ resource "aws_iam_role" "attendee_writer_iam_role" {
 }
 
 data "archive_file" "attendee_writer_lambda_function_distribution" {
-  source_dir  = "../functions/attendee-writer"
+  source_file  = "../functions/attendee-writer/main"
   output_path = "../functions/attendee-writer/${var.product}-attendee-writer.zip"
   type        = "zip"
 }
 
-resource "aws_s3_bucket_object" "attendee_writer_lambda_function_distribution_bucket_object" {
+resource "aws_s3_object" "attendee_writer_lambda_function_distribution_bucket_object" {
   bucket = "${var.account_number}-${var.distribution_bucket}"
   key    = "lambdas/${var.product}-attendee-writer/${var.product}-attendee-writer.zip"
   source = data.archive_file.attendee_writer_lambda_function_distribution.output_path
@@ -34,8 +34,8 @@ resource "aws_lambda_function" "attendee_writer_lambda_function" {
   handler          = "main"
   runtime          = "go1.x"
   role             = aws_iam_role.attendee_writer_iam_role.arn
-  s3_bucket        = aws_s3_bucket_object.attendee_writer_lambda_function_distribution_bucket_object.bucket
-  s3_key           = aws_s3_bucket_object.attendee_writer_lambda_function_distribution_bucket_object.key
+  s3_bucket        = aws_s3_object.attendee_writer_lambda_function_distribution_bucket_object.bucket
+  s3_key           = aws_s3_object.attendee_writer_lambda_function_distribution_bucket_object.key
   source_code_hash = data.archive_file.attendee_writer_lambda_function_distribution.output_md5
 
   environment {

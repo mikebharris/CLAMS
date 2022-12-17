@@ -1,14 +1,7 @@
 resource "aws_s3_bucket" "clams_frontend_static_content_bucket" {
   bucket        = var.frontend_domain
-  acl           = "public-read"
   force_destroy = true
-
-  website {
-    index_document = "index.html"
-    error_document = "index.html"
-  }
-
-  policy = data.aws_iam_policy_document.clams_frontend_bucket_policy.json
+  acl           = "public-read"
 
   tags = {
     Contact       = var.contact
@@ -16,6 +9,26 @@ resource "aws_s3_bucket" "clams_frontend_static_content_bucket" {
     Product       = var.product
     Orchestration = var.orchestration
     Description   = "S3 bucket for CLAMS frontend static content in ${var.environment} environment."
+  }
+}
+
+#resource "aws_s3_bucket_acl" "clams_frontend_static_content_bucket_acl" {
+#  bucket = aws_s3_bucket.clams_frontend_static_content_bucket.id
+#  acl = "public-read"
+#}
+
+resource "aws_s3_bucket_policy" "clams_frontend_static_content_bucket_policy" {
+  bucket = aws_s3_bucket.clams_frontend_static_content_bucket.id
+  policy = data.aws_iam_policy_document.clams_frontend_bucket_policy.json
+}
+
+resource "aws_s3_bucket_website_configuration" "clams_frontend_static_content_bucket_website_configuration" {
+  bucket = aws_s3_bucket.clams_frontend_static_content_bucket.bucket
+  index_document {
+    suffix = "index.html"
+  }
+  error_document {
+    key = "index.html"
   }
 }
 

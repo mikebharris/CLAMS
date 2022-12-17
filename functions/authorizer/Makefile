@@ -15,7 +15,7 @@ int-test: build
 
 .PHONY: unit-test
 unit-test:
-	go test ./... -coverprofile=coverage.out
+	go test . ./... -coverprofile=coverage.out -coverpkg=./...
 	go tool cover -html=coverage.out -o ./coverage.html
 
 .PHONY: test

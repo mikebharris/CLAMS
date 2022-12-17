@@ -15,14 +15,14 @@ A personal learning project using a connection to a [legacy event management sys
 
 ## More
 
-This is primarily a project for me to learn Go to establish and understand patterns for writing service and unit tests.  It was used as the basis for a workshop that I first did in Todmorden in June 2022.
+This is primarily a project for me to learn Go to establish and understand patterns for writing service and unit tests.  It was used as the basis for a workshop that I first did in Todmorden in June 2022 for [HacktionLab](https://hacktionlab.org).
 
 In the project I also attempt to use best practices around:
 
-* Test driven development using the Gomock library for unit tests
-* Behavioural driven development tests using Godock and feature files written in Gherkin
+* Test driven development using the stubs, spies and mocks library for unit tests, with extensive reworking to make the tests more refactor proof and test behaviour and not implementation, thanks to input from Hoegrammer.
+* Behavioural driven development tests using Godog with acceptance-test feature files written in Gherkin
 * Clean code - naming of methods, variables, tests, packages, etc.
-* SOLID (where possible given that Go is not an OO language)
+* SOLID (where possible given that Go is a little unusual as an OO language preferring, as it does, composition over inheritance)
 * Design patterns
 * Moduliarisation of Go code using packages
 * Infrastructure as code and devops approaches using Fabric and Terraform
@@ -30,6 +30,10 @@ In the project I also attempt to use best practices around:
 ## Architecture
 
 ![The architecture of CLAMS](CLAMS-architecture.png)
+
+### Entity Relationships
+
+![An Entity Relationship Diagram for CLAMS](CLAMS-ER-Diagram.png)
 
 ## Using CLAMS
 
@@ -52,34 +56,43 @@ In the following test and deployment sections you'll need to create a pair of cr
 There are three AWS Lambda functions:
 
 * [Attendee Writer](functions/attendee-writer) - Writes new incoming attendees into the DynamoDB datastore
-* [Attendee API](functions/attendees-api) - Presents the attendee's details to the world in JSON
-* [Report API](functions/report-api) - Does some calculations and presents data to the world in JSON
+* [Attendee API](functions/attendees-api) - Presents the attendee's details to the world and does some reporting in JSON
+* [Authorizer](functions/authorizer) - Provides HTTP Basic Auth access to certain endpoints (i.e. for PUT, POST, DELETE)
 
 ## Shared packages
 
-As an example of shared packages, these Lambda functions all use the shared _attendee_ package located in [](attendee).  This can be used in your own programs thus:
+As an example of a packages shared between multiple Lambda.  The Lambda functions all use the shared _attendee_ and _awscfg_ packages located in the same parent directory as the Lambdas themselves.  This can be used in your own programs along the lines of:
 
 ```go
 package main
 
 import (
 	"fmt"
-	"github.com/mikebharris/CLAMS/attendee"
+	"github.com/mikebharris/CLAMS/functions/attendee"
 )
 
 func main() {
-	awsConfig, _ := newAwsConfig("us-east-1")
-	store := attendee.AttendeesStore{Db: dynamodb.NewFromConfig(*awsConfig), Table: "the-attendee-table"}
-	attendees, _ := store.GetAllAttendees(context.Background())
-	for i, a := range attendees {
-		fmt.Printf("Attendee number %d is known as %s\n", i, a.Name)
+	a := attendee.Attendee{
+		AuthCode:       "ABCDEF",
+		Name:           "Frank Ostrowski",
+		Email:          "frank.o@gfa.de",
+		Telephone:      "0101 0101 01010",
+		NumberOfKids:   0,
+		Diet:           "I eat BASIC code for lunch",
+		Financials:     attendee.Financials{AmountToPay: 10, AmountPaid: 10, AmountDue: 0},
+		ArrivalDay:     "Wednesday",
+		NumberOfNights: 4,
+		StayingLate:    "No",
+		CreatedTime:    time.Now(),
 	}
+
+	fmt.Println(a)
 }
 ```
 
 ## Other files
 
-The Terraform configuration files are in the [](terraform) directory, the frontend (hastily built in Svelte) is built in [](frontend), and [](uploader) containw the utility, which can be called from within [BAMS](https://github.com/mikebharris/), to upload the latest group of attendees to SQS.
+The Terraform configuration files are in the [](terraform) directory, the frontend (hastily built in Svelte) is built in [](frontend), and [](uploader) contains a utility to upload the latest group of attendees to SQS.  It can be run on the command line or called from within [BAMS](https://github.com/mikebharris/).
 
 # Running Tests
 
@@ -153,3 +166,7 @@ Options:
 
 * Write a better front-end
 * Add authentication to the API
+* Add Kitchen reporter utility
+* Add ability to write new attendees to database
+* Add ability to synch bi-directionally between BAMS and CLAMS
+* Add ability to handle GDPR Requests-for-Erasure (RfE)

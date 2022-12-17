@@ -1,12 +1,12 @@
 @Regression
-Feature: Attendee Writer service processes results and updates Attendees datastore
+Feature: Attendee Writer service processes incoming records from BAMS and updates CLAMS
 
   @happy_path
-  Scenario: The attendees datastore is kept up to date with the records in BAMS
+  Scenario: New records from BAMS are added to CLAMS
     # New records are stored
     When the Attendee Writer is invoked with an attendee record from BAMS to be processed
-    Then the attendee is added to the Attendees Datastore
+    Then an attendee record is added to CLAMS
 
-    # Existing records are updated
+  Scenario: Records in CLAMS are updated with changes to records in BAMS
     When the Attendee Writer is invoked with an updated attendee record from BAMS to be processed
-    Then the attendee is updated in the Attendees Datastore
+    Then the attendee record is updated in CLAMS

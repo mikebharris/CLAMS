@@ -1,18 +1,18 @@
-package service_tests
+package main
 
 import (
 	"context"
 	"fmt"
-	"io"
-	"time"
-
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
+	"io"
+	"os"
+	"time"
 )
 
 type Containers struct {
 	network         testcontainers.Network
-	dynamoContainer testcontainers.Container
+	ssmContainer    testcontainers.Container
 	lambdaContainer testcontainers.Container
 }
 
@@ -22,7 +22,7 @@ func (c *Containers) Start() error {
 		return err
 	}
 
-	err = c.startDynamoDbContainer()
+	err = c.startSsmContainer()
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (c *Containers) Start() error {
 func (c *Containers) Stop() error {
 	context := context.Background()
 
-	err := c.dynamoContainer.Terminate(context)
+	err := c.ssmContainer.Terminate(context)
 	if err != nil {
 		return err
 	}
@@ -57,25 +57,12 @@ func (c *Containers) Stop() error {
 	return nil
 }
 
-func (c *Containers) GetLambdaLog() (io.ReadCloser, error) {
-	return c.lambdaContainer.Logs(context.Background())
-}
-
-func (c *Containers) GetLocalhostPort(container testcontainers.Container, port int) (int, error) {
-	context := context.Background()
-	mappedPort, err := container.MappedPort(context, nat.Port(fmt.Sprintf("%d/tcp", port)))
+func (c *Containers) GetLambdaLog() io.ReadCloser {
+	logs, err := c.lambdaContainer.Logs(context.Background())
 	if err != nil {
-		return 0, err
+		panic(err)
 	}
-	return mappedPort.Int(), nil
-}
-
-func (c *Containers) GetLocalHostDynamoPort() (int, error) {
-	return c.GetLocalhostPort(c.dynamoContainer, 8000)
-}
-
-func (c *Containers) GetLocalHostLambdaPort() (int, error) {
-	return c.GetLocalhostPort(c.lambdaContainer, 9001)
+	return logs
 }
 
 func (c *Containers) createNetwork() error {
@@ -91,23 +78,29 @@ func (c *Containers) createNetwork() error {
 	return nil
 }
 
-func (c *Containers) startDynamoDbContainer() error {
+func (c *Containers) startSsmContainer() error {
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
 	req := testcontainers.ContainerRequest{
-		Image:        "amazon/dynamodb-local",
-		ExposedPorts: []string{"8000/tcp"},
-		Name:         "dynamo",
-		Hostname:     "dynamo",
+		Image:        "wiremock/wiremock",
+		ExposedPorts: []string{"8080/tcp"},
+		Name:         "ssmmock",
+		Hostname:     "ssmmock",
 		Networks:     []string{"myNetwork"},
 		NetworkMode:  "myNetwork",
-		Entrypoint:   []string{"java", "-jar", "DynamoDBLocal.jar", "-inMemory", "-sharedDb"},
+		BindMounts:   map[string]string{wd + "/ssm/mappings/": "/home/wiremock/mappings/"},
 	}
-	var err error
 	context := context.Background()
-	c.dynamoContainer, _ = testcontainers.GenericContainer(context, testcontainers.GenericContainerRequest{
+	c.ssmContainer, err = testcontainers.GenericContainer(context, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          false,
 	})
-	err = c.dynamoContainer.Start(context)
+	if err != nil {
+		return err
+	}
+	err = c.ssmContainer.Start(context)
 	if err != nil {
 		return err
 	}
@@ -122,11 +115,11 @@ func (c *Containers) startLambdaContainer() error {
 		Name:         "lambda",
 		Hostname:     "lambda",
 		Env: map[string]string{
-			"ATTENDEES_TABLE_NAME":     "attendees",
-			"DYNAMO_ENDPOINT_OVERRIDE": "http://dynamo:8000",
-			"DOCKER_LAMBDA_STAY_OPEN":  "1",
-			"AWS_ACCESS_KEY_ID":        "x",
-			"AWS_SECRET_ACCESS_KEY":    "x",
+			"SSM_ENDPOINT_OVERRIDE":   "http://ssmmock:8080",
+			"ENVIRONMENT":             "test",
+			"DOCKER_LAMBDA_STAY_OPEN": "1",
+			"AWS_ACCESS_KEY_ID":       "x",
+			"AWS_SECRET_ACCESS_KEY":   "x",
 		},
 		Networks:    []string{"myNetwork"},
 		NetworkMode: "myNetwork",
@@ -147,4 +140,13 @@ func (c *Containers) startLambdaContainer() error {
 	c.lambdaContainer.Start(context)
 
 	return nil
+}
+
+func (c *Containers) GetLocalHostLambdaPort() (int, error) {
+	context := context.Background()
+	mappedPort, err := c.lambdaContainer.MappedPort(context, nat.Port(fmt.Sprintf("%d/tcp", 9001)))
+	if err != nil {
+		return 0, err
+	}
+	return mappedPort.Int(), nil
 }
