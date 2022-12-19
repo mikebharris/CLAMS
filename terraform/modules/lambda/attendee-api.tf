@@ -25,7 +25,6 @@ data "aws_iam_policy_document" "attendees_api_iam_policy_document" {
   statement {
     effect  = "Allow"
     actions = [
-      "ec2:DescribeNetworkInterfaces",
       "dynamodb:GetItem",
       "dynamodb:Scan"
     ]
@@ -91,4 +90,7 @@ resource "aws_lambda_function" "attendees_api_lambda_function" {
   }
 }
 
-
+resource "aws_lambda_function_url" "attendees_api_lambda_function_url" {
+  authorization_type = "NONE"
+  function_name      = aws_lambda_function.attendees_api_lambda_function.function_name
+}

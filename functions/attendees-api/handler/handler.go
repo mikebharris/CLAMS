@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -26,8 +27,8 @@ type Handler struct {
 	AttendeesStore IAttendeesStore
 }
 
-func (h Handler) HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	attendees, err := h.AttendeesStore.GetAttendees(request.PathParameters["authCode"])
+func (h Handler) HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest) (events.APIGatewayProxyResponse, error) {
+	attendees, err := h.AttendeesStore.GetAttendees(h.getAuthCodeFromPath(request.RawPath))
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
@@ -38,13 +39,19 @@ func (h Handler) HandleRequest(ctx context.Context, request events.APIGatewayPro
 
 	var responseBody []byte
 
-	if strings.Contains(request.Path, "report") {
+	if strings.Contains(request.RawPath, "report") {
 		responseBody = doReport(attendees)
 	} else {
 		responseBody = doOtherThing(attendees)
 	}
 	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Headers: headers, Body: string(responseBody)}, nil
 
+}
+
+func (h Handler) getAuthCodeFromPath(path string) string {
+	r := regexp.MustCompile("/attendees/([A-Za-z0-9]{6})")
+	submatch := r.FindStringSubmatch(path)
+	return submatch[1]
 }
 
 func doOtherThing(attendees []attendee.Attendee) []byte {
