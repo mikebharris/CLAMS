@@ -1,6 +1,7 @@
 package main
 
 import (
+	"clams/processor/dynds"
 	"database/sql"
 	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -8,15 +9,21 @@ import (
 	"os"
 )
 
-const (
-	awsRegion = "us-east-1"
-)
-
 func main() {
 	dbConx := getDatabaseConnexion()
 	defer dbConx.Close()
 
-	lambdaHandler := handler{db: &repository{dbConx: dbConx}}
+	ds := dynds.DynamoDatastore{
+		Table:    os.Getenv("WORKSHOP_SIGNUPS_TABLE_NAME"),
+		Endpoint: os.Getenv("DYNAMO_ENDPOINT_OVERRIDE"),
+	}
+	ds.Init()
+
+	lambdaHandler := handler{
+		dbConx:    dbConx,
+		datastore: &ds,
+	}
+
 	lambda.Start(lambdaHandler.handleRequest)
 }
 

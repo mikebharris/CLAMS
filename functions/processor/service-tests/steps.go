@@ -5,28 +5,38 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"time"
 
 	"testing"
 )
 
+var signupIdForGrace int
+var signupIdForMike int
+
 type steps struct {
 	containers   Containers
 	auroraClient AuroraClient
+	dynamoClient DynamoClient
 	t            *testing.T
 }
 
 func (s *steps) startContainers() {
 	s.containers.start()
 	fmt.Println("Giving the containers a chance to start before running tests")
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 }
 
 func (s *steps) setUpAuroraClient() {
 	s.auroraClient.port = s.containers.getAuroraPort()
 	s.auroraClient.host = "localhost"
 	s.auroraClient.dbconx = s.auroraClient.connectToDatabase()
+}
+
+func (s *steps) setUpDynamoClient() {
+	s.dynamoClient = newDynamoClient("localhost", s.containers.getDynamoPort())
+	s.dynamoClient.createWorkshopsSignupsTable()
 }
 
 func (s *steps) stopContainers() {
@@ -42,22 +52,22 @@ func (s *steps) stopContainers() {
 }
 
 func (s *steps) theWorkshopSignupRequestExistsInTheDatabase() {
-	s.auroraClient.createDatabaseEntries()
+	s.auroraClient.createRoles()
+	workshopId := s.auroraClient.createWorkshop("My Exciting Workshop on COBOL")
+	facilitatorId := s.auroraClient.createPerson("Grace", "Hopper", "g.hopper@codasyl.mil")
+	attendeeId := s.auroraClient.createPerson("Mike", "Harris", "mike@cobolenthusiasts.biz")
+
+	signupIdForGrace = s.auroraClient.createWorkshopSignup(workshopId, facilitatorId, facilitatorRoleId)
+	signupIdForMike = s.auroraClient.createWorkshopSignup(workshopId, attendeeId, attendeeRoleId)
 }
 
 type message struct {
 	WorkshopSignupId int
-	WorkshopId       int
-	PeopleId         int
-	RoleId           int
 }
 
 func (s *steps) theProcessorLambdaIsInvoked() error {
 	request := message{
-		WorkshopSignupId: 1,
-		WorkshopId:       1,
-		PeopleId:         2,
-		RoleId:           1,
+		WorkshopSignupId: signupIdForMike,
 	}
 
 	return s.theLambdaIsInvoked(request)
@@ -89,4 +99,16 @@ func (s *steps) theLambdaIsInvoked(payload message) error {
 	}
 
 	return nil
+}
+
+func (s *steps) theWorkshopSignupsDatastoreIsUpdated() {
+	signup, err := s.dynamoClient.getWorkshopSignup(signupIdForMike)
+	if err != nil {
+		panic(err)
+	}
+
+	assert.NotNil(s.t, signup, "No signup found")
+	assert.Equal(s.t, "My Exciting Workshop on COBOL", signup.WorkshopTitle)
+	assert.Equal(s.t, "Mike Harris", signup.Name)
+	assert.Equal(s.t, "attendee", signup.Role)
 }

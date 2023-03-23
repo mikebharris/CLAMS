@@ -13,12 +13,14 @@ import (
 type Containers struct {
 	network         testcontainers.Network
 	auroraContainer testcontainers.Container
+	dynamoContainer testcontainers.Container
 	flywayContainer testcontainers.Container
 	lambdaContainer testcontainers.Container
 }
 
 func (c *Containers) start() {
 	c.createNetwork()
+	c.startDynamoDbContainer()
 	c.startAuroraContainer()
 	c.startFlywayContainer()
 	c.startLambdaContainer()
@@ -32,6 +34,10 @@ func (c *Containers) stop() {
 	}
 
 	if err := c.auroraContainer.Terminate(ctx); err != nil {
+		panic(err)
+	}
+
+	if err := c.dynamoContainer.Terminate(ctx); err != nil {
 		panic(err)
 	}
 
@@ -64,6 +70,10 @@ func (c *Containers) getAuroraPort() int {
 	return c.getLocalhostPort(c.auroraContainer, 5432)
 }
 
+func (c *Containers) getDynamoPort() int {
+	return c.getLocalhostPort(c.dynamoContainer, 8000)
+}
+
 func (c *Containers) createNetwork() {
 	var err error
 	req := testcontainers.GenericNetworkRequest{
@@ -82,13 +92,15 @@ func (c *Containers) startLambdaContainer() {
 		Name:         "lambda",
 		Hostname:     "lambda",
 		Env: map[string]string{
-			"DOCKER_LAMBDA_STAY_OPEN": "1",
-			"AWS_ACCESS_KEY_ID":       "x",
-			"AWS_SECRET_ACCESS_KEY":   "x",
-			"ENVIRONMENT":             "test",
-			"RDS_HOST":                "postgres",
-			"RDS_USER":                "hacktivista",
-			"RDS_PASSWORD":            "d0ntHackM3",
+			"DOCKER_LAMBDA_STAY_OPEN":     "1",
+			"AWS_ACCESS_KEY_ID":           "x",
+			"AWS_SECRET_ACCESS_KEY":       "x",
+			"ENVIRONMENT":                 "test",
+			"RDS_HOST":                    "postgres",
+			"RDS_USER":                    "hacktivista",
+			"RDS_PASSWORD":                "d0ntHackM3",
+			"WORKSHOP_SIGNUPS_TABLE_NAME": workshopSignupsTableName,
+			"DYNAMO_ENDPOINT_OVERRIDE":    "http://dynamo:8000",
 		},
 		Networks:    []string{"myNetwork"},
 		NetworkMode: "myNetwork",
@@ -171,6 +183,30 @@ func (c *Containers) startFlywayContainer() {
 	}
 
 	if err := c.flywayContainer.Start(ctx); err != nil {
+		panic(err)
+	}
+}
+
+func (c *Containers) startDynamoDbContainer() {
+	req := testcontainers.ContainerRequest{
+		Image:        "amazon/dynamodb-local",
+		ExposedPorts: []string{"8000/tcp"},
+		Name:         "dynamo",
+		Hostname:     "dynamo",
+		Networks:     []string{"myNetwork"},
+		NetworkMode:  "myNetwork",
+		Entrypoint:   []string{"java", "-jar", "DynamoDBLocal.jar", "-inMemory", "-sharedDb"},
+	}
+	var err error
+	ctx := context.Background()
+	c.dynamoContainer, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          false,
+	})
+	if err != nil {
+		panic(err)
+	}
+	if err := c.dynamoContainer.Start(ctx); err != nil {
 		panic(err)
 	}
 }

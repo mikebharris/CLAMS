@@ -12,16 +12,20 @@ func TestFeatures(t *testing.T) {
 		TestSuiteInitializer: func(ctx *godog.TestSuiteContext) {
 			ctx.BeforeSuite(steps.startContainers)
 			ctx.BeforeSuite(steps.setUpAuroraClient)
+			ctx.BeforeSuite(steps.setUpDynamoClient)
 			ctx.AfterSuite(steps.stopContainers)
 		},
 		ScenarioInitializer: func(ctx *godog.ScenarioContext) {
 			ctx.Step(`^workshop signup records exist in the database$`, steps.theWorkshopSignupRequestExistsInTheDatabase)
 			ctx.Step(`^the workshop signup processor receives a notification$`, steps.theProcessorLambdaIsInvoked)
+			ctx.Step(`^the workshops signups datastore is updated$`, steps.theWorkshopSignupsDatastoreIsUpdated)
 		},
 		Options: &godog.Options{
-			Format:   "pretty",
-			Paths:    []string{"features"},
-			TestingT: t, // Testing instance that will run subtests.
+			StopOnFailure: true,
+			Strict:        true,
+			Format:        "pretty",
+			Paths:         []string{"features"},
+			TestingT:      t, // Testing instance that will run subtests.
 		},
 	}
 

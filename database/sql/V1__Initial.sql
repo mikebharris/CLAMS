@@ -31,9 +31,9 @@ create table workshop_signups
     signed_up_on timestamp not null,
 
     foreign key (people_id)
-        references roles (id),
+        references people (id),
     foreign key (workshop_id)
-        references roles (id),
+        references workshops (id),
     foreign key (role_id)
         references roles (id)
 );

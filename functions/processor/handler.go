@@ -1,58 +1,54 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"golang.org/x/net/context"
 )
 
+type IDatastore interface {
+	Store(thing interface{}) error
+}
+
 type handler struct {
-	db IRepository
+	dbConx    *sql.DB
+	datastore IDatastore
 }
 
 type message struct {
 	WorkshopSignupId int
-	WorkshopId       int
-	PeopleId         int
-	RoleId           int
-}
-
-type Person struct {
-	Name  string
-	Email string
-	Diet  string
 }
 
 type WorkshopSignupRecord struct {
-	WorkshopId       int
+	WorkshopSignupId int
 	WorkshopTitle    string
-	FacilitatorName  string
-	FacilitatorEmail string
-	People           []Person
+	Role             string
+	Name             string
 }
 
 func (h handler) handleRequest(_ context.Context, sqsEvent events.SQSEvent) (events.SQSEventResponse, error) {
 	if len(sqsEvent.Records) == 0 {
 		return events.SQSEventResponse{}, errors.New("sqs event contained no records")
 	}
-
+	repository := repository{dbConx: h.dbConx}
 	var batchItemFailures []events.SQSBatchItemFailure
 	for _, record := range sqsEvent.Records {
 		msg := message{}
 		if err := json.Unmarshal([]byte(record.Body), &msg); err != nil {
 			batchItemFailures = append(batchItemFailures, events.SQSBatchItemFailure{ItemIdentifier: record.MessageId})
 		} else {
-			fmt.Println("I have a message: ", msg)
-			signupRecord, _ := h.db.getSignupRecord(msg.WorkshopSignupId)
-			fmt.Println("Someone signed up for ", signupRecord.WorkshopTitle)
+			signupRecord, _ := repository.getSignupRecord(msg.WorkshopSignupId)
+			if signupRecord == (WorkshopSignupRecord{}) {
+				batchItemFailures = append(batchItemFailures, events.SQSBatchItemFailure{ItemIdentifier: record.MessageId})
+				continue
+			}
+			if err := h.datastore.Store(signupRecord); err != nil {
+				batchItemFailures = append(batchItemFailures, events.SQSBatchItemFailure{ItemIdentifier: record.MessageId})
+			}
 		}
 	}
 
 	return events.SQSEventResponse{BatchItemFailures: batchItemFailures}, nil
-}
-
-type IRepository interface {
-	getSignupRecord(signupId int) (WorkshopSignupRecord, error)
 }

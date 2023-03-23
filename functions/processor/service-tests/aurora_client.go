@@ -4,7 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"math/rand"
 )
+
+const facilitatorRoleId = 1
+const attendeeRoleId = 2
 
 type AuroraClient struct {
 	host   string
@@ -31,41 +35,53 @@ func (a *AuroraClient) closeDatabaseConnexion() error {
 	return err
 }
 
-func (a *AuroraClient) createDatabaseEntries() {
+func (a *AuroraClient) createWorkshopSignup(workshopId, personId, roleId int) int {
+	id := rand.Intn(100)
 	statement := `
-		insert into "workshops" (id, title)
-		values(1, 'My Exciting Workshop on COBOL')
+			insert into workshop_signups(id, people_id, workshop_id, role_id, signed_up_on)
+			values($1, $2, $3, $4, now())
 	`
-	_, err := a.dbconx.Exec(statement)
+	_, err := a.dbconx.Exec(statement, id, personId, workshopId, roleId)
 	if err != nil {
 		panic(err)
 	}
+	return id
+}
 
-	statement = `
-		insert into people (id, forename, surname, email)
-		values(1, 'Frank', 'Ostrowski', 'frank.o@gfa.de'),(2, 'Grace', 'Hopper', 'g.hopper@codasyl.mil')
-	`
-	_, err = a.dbconx.Exec(statement)
-	if err != nil {
-		panic(err)
-	}
-
-	statement = `
+func (a *AuroraClient) createRoles() {
+	statement := `
 			insert into roles(id, role_name)
-			values(1, 'Facilitator'),(2, 'Attendee')
+			values($1, 'facilitator'),($2, 'attendee')
 	`
-	_, err = a.dbconx.Exec(statement)
+	_, err := a.dbconx.Exec(statement, facilitatorRoleId, attendeeRoleId)
 	if err != nil {
 		panic(err)
 	}
+}
 
-	statement = `
-			insert into workshop_signups(people_id, workshop_id, role_id, signed_up_on)
-			values(1, 2, 1, now()), (1, 1, 2, now())
+func (a *AuroraClient) createPerson(forename, surname, email string) int {
+	id := rand.Intn(100)
+
+	statement := `
+		insert into people(id, forename, surname, email)
+		values($1, $2, $3, $4)
 	`
-	_, err = a.dbconx.Exec(statement)
+	_, err := a.dbconx.Exec(statement, id, forename, surname, email)
 	if err != nil {
 		panic(err)
 	}
+	return id
+}
 
+func (a *AuroraClient) createWorkshop(title string) int {
+	id := rand.Intn(100)
+	statement := `
+		insert into workshops(id, title)
+		values($1, $2)
+	`
+	_, err := a.dbconx.Exec(statement, id, title)
+	if err != nil {
+		panic(err)
+	}
+	return id
 }
