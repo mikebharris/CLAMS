@@ -48,3 +48,17 @@ resource "aws_sqs_queue_policy" "attendee_input_dlq_policy" {
     ]
   })
 }
+
+resource "aws_sqs_queue" "signups_queue" {
+  name = "${var.product}-${var.environment}-signups"
+  visibility_timeout_seconds = 60
+
+  tags = {
+    Name          = "${var.product}.${var.environment}.sqs.signups_queue"
+    Contact       = var.contact
+    Environment   = var.environment
+    Product       = var.product
+    Orchestration = var.orchestration
+    Description   = "SQS Queue for people who signup"
+  }
+}

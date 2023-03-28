@@ -96,9 +96,10 @@ func (c *Containers) startLambdaContainer() {
 			"AWS_ACCESS_KEY_ID":           "x",
 			"AWS_SECRET_ACCESS_KEY":       "x",
 			"ENVIRONMENT":                 "test",
-			"RDS_HOST":                    "postgres",
-			"RDS_USER":                    "hacktivista",
-			"RDS_PASSWORD":                "d0ntHackM3",
+			"DB_HOST":                     "postgres",
+			"DB_NAME":                     "hacktionlab",
+			"DB_USER":                     "hacktivista",
+			"DB_PASSWORD":                 "d0ntHackM3",
 			"WORKSHOP_SIGNUPS_TABLE_NAME": workshopSignupsTableName,
 			"DYNAMO_ENDPOINT_OVERRIDE":    "http://dynamo:8000",
 		},
@@ -158,7 +159,7 @@ func (c *Containers) startFlywayContainer() {
 		NetworkMode: "myNetwork",
 		Mounts: testcontainers.ContainerMounts{
 			testcontainers.ContainerMount{
-				Source:   testcontainers.GenericBindMountSource{HostPath: filepath.Join(cwd, "..", "..", "..", "database", "sql")},
+				Source:   testcontainers.GenericBindMountSource{HostPath: filepath.Join(cwd, "..", "..", "..", "flyway", "sql")},
 				Target:   "/flyway/sql",
 				ReadOnly: true,
 			},

@@ -1,5 +1,0 @@
-flyway.url=${JDBC_URI_TEMPLATE}${RDS_ENDPOINT}/${RDS_DATABASE}
-flyway.user=${RDS_USER}
-flyway.password=${RDS_PASSWORD}
-flyway.schemas=hacktionlab_workshops
-flyway.validateOnMigrate=false

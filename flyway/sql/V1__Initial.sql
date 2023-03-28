@@ -1,14 +1,15 @@
 set timezone = 'UTC';
 
+create schema if not exists "hacktionlab_workshops";
 set schema 'hacktionlab_workshops';
 
-create table workshops
+create table hacktionlab_workshops.workshops
 (
     id    serial primary key,
     title text unique not null
 );
 
-create table people
+create table hacktionlab_workshops.people
 (
     id       serial primary key,
     forename varchar(50)         null,
@@ -16,13 +17,13 @@ create table people
     email    varchar(100) unique not null
 );
 
-create table roles
+create table hacktionlab_workshops.roles
 (
     id        serial primary key,
     role_name varchar(20) null
 );
 
-create table workshop_signups
+create table hacktionlab_workshops.workshop_signups
 (
     id           serial primary key,
     people_id    int       not null,
@@ -39,7 +40,7 @@ create table workshop_signups
 );
 
 create sequence trigger_notifications_id_seq as bigint start 1 increment 1 cache 1;
-create table trigger_notifications
+create table hacktionlab_workshops.trigger_notifications
 (
     id      bigint       not null default nextval('trigger_notifications_id_seq'),
     message varchar(256) not null,

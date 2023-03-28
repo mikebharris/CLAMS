@@ -7,8 +7,10 @@ variable orchestration {}
 variable distribution_bucket {}
 variable "attendees_table_arn" {}
 variable "attendees_table_name" {}
-variable "input_queue_arn" {}
-variable "input_queue_name" {}
+variable "attendees_queue_arn" {}
+variable "attendees_queue_name" {}
+
+variable "signups_queue_arn" {}
 
 variable "cors_configuration" {
   type = any
@@ -18,3 +20,8 @@ variable "cors_configuration" {
     allow_origins = ["*"]
   }
 }
+
+variable "db_host" {}
+variable "db_name" {}
+variable "db_password" {}
+variable "db_username" {}

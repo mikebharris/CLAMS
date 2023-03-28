@@ -41,7 +41,6 @@ resource "aws_lambda_function" "attendee_writer_lambda_function" {
   environment {
     variables = {
       ATTENDEES_TABLE_NAME = var.attendees_table_name
-      INPUT_QUEUE_NAME     = var.input_queue_name
     }
   }
 
@@ -75,7 +74,7 @@ data "aws_iam_policy_document" "attendee_writer_iam_policy_document" {
       "sqs:GetQueueAttributes",
     ]
     resources = [
-      var.input_queue_arn
+      var.attendees_queue_arn
     ]
   }
 }
@@ -102,7 +101,7 @@ resource aws_cloudwatch_log_group "attendee_writer_log_group" {
 }
 
 resource "aws_lambda_event_source_mapping" "attendee_writer_source_mapping" {
-  event_source_arn        = var.input_queue_arn
+  event_source_arn        = var.attendees_queue_arn
   function_name           = aws_lambda_function.attendee_writer_lambda_function.arn
   function_response_types = ["ReportBatchItemFailures"]
 }
