@@ -85,7 +85,7 @@ def get_api_url() -> str:
 
 
 def build_lambdas():
-    for f in ['attendees-api', 'attendee-writer', 'processor']:
+    for f in ['attendees-api', 'attendee-writer', 'processor', 'db-trigger']:
         lambda_location = 'functions/{function}'.format(function=f)
         print("Building lambda in {l}....".format(l=lambda_location))
         with do_in_directory(lambda_location):

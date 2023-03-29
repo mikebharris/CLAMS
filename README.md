@@ -12,6 +12,7 @@ A personal learning project using a connection to a [legacy event management sys
 * CloudFront
 * Route53
 * CloudWatch
+* RDS
 
 ## More
 
@@ -53,11 +54,13 @@ In the following test and deployment sections you'll need to create a pair of cr
 
 ## Lambdas
 
-There are three AWS Lambda functions:
+There are five AWS Lambda functions:
 
 * [Attendee Writer](functions/attendee-writer) - Writes new incoming attendees into the DynamoDB datastore
 * [Attendee API](functions/attendees-api) - Presents the attendee's details to the world and does some reporting in JSON
 * [Authorizer](functions/authorizer) - Provides HTTP Basic Auth access to certain endpoints (i.e. for PUT, POST, DELETE)
+* [DB-Trigger](functions/db-trigger) - Turns entries in the trigger_notifications table into streamed events
+* [Processor](functions/processor) - Process db notifications created by the DB-Trigger Lambda
 
 ## Shared packages
 
@@ -93,6 +96,8 @@ func main() {
 ## Other files
 
 The Terraform configuration files are in the [](terraform) directory, the frontend (hastily built in Svelte) is built in [](frontend), and [](uploader) contains a utility to upload the latest group of attendees to SQS.  It can be run on the command line or called from within [BAMS](https://github.com/mikebharris/).
+
+The Database is deployed using Flyway (both to AWS and into a Docker instance for the Service Tests).  The command that is run can be found in [](fabfile.py) and the SQL migration (scheme version) files in [](flyway/sql)
 
 # Running Tests
 
