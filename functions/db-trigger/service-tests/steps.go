@@ -107,6 +107,10 @@ func (s *steps) theMessagesArePlacedOnTheQueue() {
 	assert.Equal(s.t, 6, tm.RoleId)
 }
 
+func (s *steps) theNotificationsAreRemovedFromTheDatabase() {
+	assert.Equal(s.t, 0, s.databaseClient.countOfNotifications())
+}
+
 func (s *steps) closeDatabaseConnection() {
 	s.databaseClient.closeDatabaseConnexion()
 }

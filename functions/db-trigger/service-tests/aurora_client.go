@@ -38,3 +38,13 @@ func (a *DatabaseClient) insertTriggerNotification(n TriggerNotification) {
 		panic(err)
 	}
 }
+
+func (a *DatabaseClient) countOfNotifications() int {
+	statement := "select count(message) from trigger_notifications"
+	row := a.dbConx.QueryRow(statement)
+	var count int
+	if err := row.Scan(&count); err != nil {
+		panic(err)
+	}
+	return count
+}

@@ -10,9 +10,16 @@ import (
 	"testing"
 )
 
+type message struct {
+	WorkshopSignupId int
+	WorkshopId       int
+	PeopleId         int
+	RoleId           int
+}
+
 type spyingSqsClient struct {
-	messageThatWasSent *[]TriggerNotification
-	queueThatWasSentTo *string
+	messagesThatWereSent *[]message
+	queueThatWasSentTo   *string
 }
 
 func (s spyingSqsClient) GetQueueUrl(_ context.Context, params *sqs.GetQueueUrlInput, _ ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
@@ -22,13 +29,13 @@ func (s spyingSqsClient) GetQueueUrl(_ context.Context, params *sqs.GetQueueUrlI
 }
 
 func (s spyingSqsClient) SendMessage(_ context.Context, params *sqs.SendMessageInput, _ ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
-	var msg TriggerNotification
+	var msg message
 	json.Unmarshal([]byte(*params.MessageBody), &msg)
-	*s.messageThatWasSent = append(*s.messageThatWasSent, msg)
+	*s.messagesThatWereSent = append(*s.messagesThatWereSent, msg)
 	return nil, nil
 }
 
-func Test_handler_Foo(t *testing.T) {
+func Test_handler_Should_SendTriggerNotificationsToEventQueueAndDeleteThemFromDatabase(t *testing.T) {
 	// Given
 	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	if err != nil {
@@ -36,16 +43,20 @@ func Test_handler_Foo(t *testing.T) {
 	}
 	defer db.Close()
 
-	rows := sqlmock.NewRows([]string{"message"}).
-		AddRow("{\"WorkshopSignupId\":1, \"WorkshopId\":3, \"PeopleId\":3, \"RoleId\":7}").
-		AddRow("{\"WorkshopSignupId\":1, \"WorkshopId\":8, \"PeopleId\":6, \"RoleId\":1}")
+	mock.MatchExpectationsInOrder(true)
 
-	sql := "select message from trigger_notifications"
-	mock.ExpectQuery(sql).WillReturnRows(rows)
+	rows := sqlmock.NewRows([]string{"id", "message"}).
+		AddRow(1, "{\"WorkshopSignupId\":1, \"WorkshopId\":3, \"PeopleId\":3, \"RoleId\":7}").
+		AddRow(2, "{\"WorkshopSignupId\":1, \"WorkshopId\":8, \"PeopleId\":6, \"RoleId\":1}")
 
-	var messagesReceived []TriggerNotification
+	mock.ExpectQuery("select id, message from trigger_notifications").WillReturnRows(rows)
+
+	mock.ExpectExec("delete from trigger_notifications where id = 1")
+	mock.ExpectExec("delete from trigger_notifications where id = 2")
+
+	var messagesReceived []message
 	var queueThatWasSentTo string
-	handler := handler{dbConx: db, sqsService: &spyingSqsClient{queueThatWasSentTo: &queueThatWasSentTo, messageThatWasSent: &messagesReceived}}
+	handler := handler{dbConx: db, sqsService: &spyingSqsClient{queueThatWasSentTo: &queueThatWasSentTo, messagesThatWereSent: &messagesReceived}}
 
 	// When
 	response, err := handler.handleRequest(context.Background())
@@ -55,16 +66,18 @@ func Test_handler_Foo(t *testing.T) {
 	assert.Equal(t, events.LambdaFunctionURLResponse{StatusCode: 200}, response)
 	assert.Equal(t, "db-trigger-queue", queueThatWasSentTo)
 	assert.Len(t, messagesReceived, 2)
-	assert.Equal(t, TriggerNotification{
+	assert.Equal(t, message{
 		WorkshopSignupId: 1,
 		WorkshopId:       3,
 		PeopleId:         3,
 		RoleId:           7,
 	}, messagesReceived[0])
-	assert.Equal(t, TriggerNotification{
+	assert.Equal(t, message{
 		WorkshopSignupId: 1,
 		WorkshopId:       8,
 		PeopleId:         6,
 		RoleId:           1,
 	}, messagesReceived[1])
+
+	assert.NoError(t, mock.ExpectationsWereMet())
 }

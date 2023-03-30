@@ -17,9 +17,10 @@ func TestFeatures(t *testing.T) {
 			ctx.AfterSuite(steps.stopContainers)
 		},
 		ScenarioInitializer: func(ctx *godog.ScenarioContext) {
-			ctx.Step(`^there are database trigger records in the database$`, steps.thereAreDatabaseTriggerNotifications)
+			ctx.Step(`^there are database trigger notifications in the database$`, steps.thereAreDatabaseTriggerNotifications)
 			ctx.Step(`^the database trigger is invoked$`, steps.theDbTriggerLambdaIsInvoked)
 			ctx.Step(`^the messages are placed on the queue$`, steps.theMessagesArePlacedOnTheQueue)
+			ctx.Step(`^the notifications are removed from the database$`, steps.theNotificationsAreRemovedFromTheDatabase)
 		},
 		Options: &godog.Options{
 			StopOnFailure: true,
