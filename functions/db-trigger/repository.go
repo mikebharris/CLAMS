@@ -15,19 +15,22 @@ type notification struct {
 	message string
 }
 
-func (r *repository) getTriggerNotifications() []notification {
-	rows, _ := r.dbConx.Query("select id, message from trigger_notifications")
+func (r *repository) getTriggerNotifications() ([]notification, error) {
+	rows, err := r.dbConx.Query("select id, message from trigger_notifications")
+	if err != nil {
+		return []notification{}, fmt.Errorf("fetching trigger notifications: %v", err)
+	}
 
 	var notifications []notification
 	for rows.Next() {
 		var n notification
 		if err := rows.Scan(&n.id, &n.message); err != nil {
-			return []notification{}
+			return []notification{}, nil
 		} else {
 			notifications = append(notifications, n)
 		}
 	}
-	return notifications
+	return notifications, nil
 }
 
 func (r *repository) deleteTriggerNotification(id int) {

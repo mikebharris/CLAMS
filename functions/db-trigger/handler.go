@@ -28,7 +28,10 @@ func (h handler) handleRequest(_ context.Context) (events.LambdaFunctionURLRespo
 	)
 
 	r := repository{dbConx: h.dbConx}
-	notifications := r.getTriggerNotifications()
+	notifications, err := r.getTriggerNotifications()
+	if err != nil {
+		return events.LambdaFunctionURLResponse{StatusCode: 500}, err
+	}
 	for _, n := range notifications {
 		h.sqsService.SendMessage(
 			context.Background(),

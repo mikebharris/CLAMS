@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -35,7 +36,7 @@ func (s spyingSqsClient) SendMessage(_ context.Context, params *sqs.SendMessageI
 	return nil, nil
 }
 
-func Test_handler_Should_SendTriggerNotificationsToEventQueueAndDeleteThemFromDatabase(t *testing.T) {
+func Test_handler_ShouldSendTriggerNotificationsToEventQueueAndDeleteThemFromDatabase(t *testing.T) {
 	// Given
 	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	if err != nil {
@@ -79,5 +80,30 @@ func Test_handler_Should_SendTriggerNotificationsToEventQueueAndDeleteThemFromDa
 		RoleId:           1,
 	}, messagesReceived[1])
 
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func Test_handler_ShouldReturnErrorWhenUnableToFetchTriggerNotifications(t *testing.T) {
+	// Given
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	if err != nil {
+		t.Fatalf("opening stub repository connexion: %v", err)
+	}
+	defer db.Close()
+
+	mock.ExpectQuery("select id, message from trigger_notifications").WillReturnError(errors.New("some db error"))
+
+	var messagesReceived []message
+	var queueThatWasSentTo string
+	handler := handler{dbConx: db, sqsService: &spyingSqsClient{queueThatWasSentTo: &queueThatWasSentTo, messagesThatWereSent: &messagesReceived}}
+
+	// When
+	response, err := handler.handleRequest(context.Background())
+
+	// Then
+	assert.NotNil(t, err)
+	assert.Equal(t, "fetching trigger notifications: some db error", err.Error())
+	assert.Equal(t, events.LambdaFunctionURLResponse{StatusCode: 500}, response)
+	assert.Len(t, messagesReceived, 0)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
