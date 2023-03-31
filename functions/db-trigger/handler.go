@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -20,12 +21,15 @@ type handler struct {
 
 func (h handler) handleRequest(_ context.Context) (events.LambdaFunctionURLResponse, error) {
 	queueName := "db-trigger-queue"
-	queueUrl, _ := h.sqsService.GetQueueUrl(
+	queueUrl, err := h.sqsService.GetQueueUrl(
 		context.Background(),
 		&sqs.GetQueueUrlInput{
 			QueueName: &queueName,
 		},
 	)
+	if err != nil {
+		return events.LambdaFunctionURLResponse{StatusCode: 500}, fmt.Errorf("getting queue url for %s: %v", queueName, err)
+	}
 
 	r := repository{dbConx: h.dbConx}
 	notifications, err := r.getTriggerNotifications()
@@ -33,14 +37,19 @@ func (h handler) handleRequest(_ context.Context) (events.LambdaFunctionURLRespo
 		return events.LambdaFunctionURLResponse{StatusCode: 500}, err
 	}
 	for _, n := range notifications {
-		h.sqsService.SendMessage(
+		_, err := h.sqsService.SendMessage(
 			context.Background(),
 			&sqs.SendMessageInput{
 				QueueUrl:    aws.String(*queueUrl.QueueUrl),
 				MessageBody: aws.String(n.message),
 			},
 		)
-		r.deleteTriggerNotification(n.id)
+		if err != nil {
+			return events.LambdaFunctionURLResponse{StatusCode: 500}, fmt.Errorf("sending message to queue %s: %v", queueName, err)
+		}
+		if err := r.deleteTriggerNotification(n.id); err != nil {
+			return events.LambdaFunctionURLResponse{StatusCode: 500}, fmt.Errorf("deleting trigger notification %d: %v", n.id, err)
+		}
 	}
 
 	return events.LambdaFunctionURLResponse{StatusCode: 200}, nil

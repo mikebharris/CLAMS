@@ -33,6 +33,7 @@ func (r *repository) getTriggerNotifications() ([]notification, error) {
 	return notifications, nil
 }
 
-func (r *repository) deleteTriggerNotification(id int) {
-	r.dbConx.Exec(fmt.Sprintf("delete from trigger_notifications where id = %d", id))
+func (r *repository) deleteTriggerNotification(id int) error {
+	_, err := r.dbConx.Exec(fmt.Sprintf("delete from trigger_notifications where id = %d", id))
+	return err
 }
