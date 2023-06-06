@@ -1,7 +1,6 @@
 resource "aws_s3_bucket" "clams_frontend_static_content_bucket" {
   bucket        = var.frontend_domain
   force_destroy = true
-  acl           = "public-read"
 
   tags = {
     Contact       = var.contact
@@ -12,10 +11,17 @@ resource "aws_s3_bucket" "clams_frontend_static_content_bucket" {
   }
 }
 
-#resource "aws_s3_bucket_acl" "clams_frontend_static_content_bucket_acl" {
-#  bucket = aws_s3_bucket.clams_frontend_static_content_bucket.id
-#  acl = "public-read"
-#}
+resource "aws_s3_account_public_access_block" "blah" {
+  block_public_acls = false
+}
+
+resource "aws_s3_bucket_ownership_controls" "clams_frontend_static_content_bucket_ownership_controls" {
+  bucket = aws_s3_bucket.clams_frontend_static_content_bucket.id
+
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
 
 resource "aws_s3_bucket_policy" "clams_frontend_static_content_bucket_policy" {
   bucket = aws_s3_bucket.clams_frontend_static_content_bucket.id
