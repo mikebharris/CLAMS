@@ -9,9 +9,8 @@ from invoke import task, run as local
 
 @task
 def terraform(context, account_number="", contact="", distribution_bucket="terraform-deployments",
-              attendees_table="attendees-datastore", input_queue="attendee-input-queue", project_name="clams",
-              region="us-east-1", environment="nonprod", lambdas="yes", frontend="yes", flywayonly="no",
-              database="yes", mode="plan"):
+              project_name="clams", region="us-east-1", environment="nonprod", lambdas="yes",
+              frontend="yes", flywayonly="no", database="yes", mode="plan"):
     if mode not in ['init', 'plan', 'apply', 'destroy']:
         print("No action to take.  Try passing --mode init|plan|apply|destroy")
         exit(-1)
@@ -39,15 +38,12 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
     command = 'terraform {mode} -input=false ' \
               '-var "product={project_name}" -var "region={region}" ' \
               '-var "contact={contact}" -var "distribution_bucket={distribution_bucket}" ' \
-              '-var "attendees_table_name={attendees_table_name}" -var "input_queue_name={input_queue}" ' \
               '-var "account_number={account_number}" -var "environment={environment}" --refresh=true' \
         .format(mode=mode,
                 project_name=project_name,
                 region=region,
                 contact=contact,
                 distribution_bucket=distribution_bucket,
-                attendees_table_name=attendees_table,
-                input_queue=input_queue,
                 account_number=account_number,
                 environment=environment)
 

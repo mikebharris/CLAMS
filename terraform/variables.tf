@@ -7,8 +7,12 @@ variable orchestration {
   default = "https://github.com/mikebharris/clams"
 }
 variable distribution_bucket {}
-variable input_queue_name {}
-variable attendees_table_name {}
+variable input_queue_name {
+  default = "attendee-input-queue"
+}
+variable attendees_table_name {
+  default = "attendees-datastore"
+}
 variable certificate_domain{
   default = "events.hacktionlab.org"
 }
