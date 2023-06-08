@@ -3,7 +3,6 @@ resource "aws_db_instance" "hacktionlab_signups_database" {
   identifier           = "hacktionlab"
   db_name              = "hacktionlab"
   engine               = "postgres"
-  availability_zone    = "us-east-1a"
   instance_class       = "db.t4g.micro"
   username             = data.aws_ssm_parameter.db_username.value
   password             = data.aws_ssm_parameter.db_password.value

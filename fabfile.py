@@ -9,7 +9,7 @@ from invoke import task, run as local
 
 @task
 def terraform(context, account_number="", contact="", distribution_bucket="terraform-deployments",
-              project_name="clams", region="us-east-1", environment="nonprod", lambdas="yes",
+              project_name="clams", region="", environment="nonprod", lambdas="yes",
               frontend="yes", flywayonly="no", database="yes", mode="plan"):
     if mode not in ['init', 'plan', 'apply', 'destroy']:
         print("No action to take.  Try passing --mode init|plan|apply|destroy")
@@ -25,9 +25,8 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
     bucket = '{account_number}-{distribution_bucket}' \
         .format(account_number=account_number, distribution_bucket=distribution_bucket)
 
-    key = 'tfstate/{environment}-{project_name}.json' \
-        .format(environment=environment,
-                project_name=project_name)
+    key = 'tfstate/{region}/{environment}-{project_name}.json' \
+        .format(region=region, environment=environment, project_name=project_name)
 
     print("Remote state is {bucket}/{key}".format(bucket=bucket, key=key))
 
