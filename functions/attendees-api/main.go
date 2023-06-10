@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	awsConfig := awscfg.GetAwsConfig(dynamodb.ServiceID, os.Getenv("DYNAMO_ENDPOINT_OVERRIDE"))
+	awsConfig := awscfg.GetAwsConfig(dynamodb.ServiceID, os.Getenv("DYNAMO_ENDPOINT_OVERRIDE"), os.Getenv("AWS_REGION"))
 
 	lambdaHandler := handler.Handler{
 		AttendeesStore: &attendee.AttendeesStore{

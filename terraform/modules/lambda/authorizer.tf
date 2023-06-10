@@ -72,7 +72,7 @@
 #}
 #
 #resource "aws_s3_object" "api_authorizer_lambda_function_distribution_s3_object" {
-#  bucket = "${var.environment}-${var.distribution_bucket}"
+#  bucket = "${var.environment}-${var.region}-${var.distribution_bucket}"
 #  key    = "${var.product}-api/api-authorizer.zip"
 #  source = data.archive_file.api_authorizer_lambda_function_distribution.output_path
 #  etag   = filemd5(data.archive_file.api_authorizer_lambda_function_distribution.output_path)
@@ -91,6 +91,7 @@
 #  environment {
 #    variables = {
 #      ENVIRONMENT = var.environment
+#       AWS_REGION           = var.region
 #    }
 #  }
 #

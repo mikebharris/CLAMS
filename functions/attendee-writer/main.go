@@ -11,6 +11,7 @@ func main() {
 	ds := dynds.DynamoDatastore{
 		Table:    os.Getenv("ATTENDEES_TABLE_NAME"),
 		Endpoint: os.Getenv("DYNAMO_ENDPOINT_OVERRIDE"),
+		Region:   os.Getenv("AWS_REGION"),
 	}
 	ds.Init()
 

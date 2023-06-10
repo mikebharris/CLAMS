@@ -12,11 +12,12 @@ import (
 type DynamoDatastore struct {
 	Table    string
 	Endpoint string
+	Region   string
 	dbClient *dynamodb.Client
 }
 
 func (d *DynamoDatastore) Init() {
-	awsConfig := awscfg.GetAwsConfig(dynamodb.ServiceID, d.Endpoint)
+	awsConfig := awscfg.GetAwsConfig(dynamodb.ServiceID, d.Endpoint, d.Region)
 	d.dbClient = dynamodb.NewFromConfig(*awsConfig)
 }
 

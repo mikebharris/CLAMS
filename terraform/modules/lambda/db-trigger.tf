@@ -57,7 +57,7 @@ data "archive_file" "db_trigger_lambda_function_distribution" {
 }
 
 resource "aws_s3_object" "db_trigger_lambda_function_distribution_bucket_object" {
-  bucket = "${var.account_number}-${var.distribution_bucket}"
+  bucket = var.distribution_bucket
   key    = "lambdas/${var.product}-db-trigger/${var.product}-db-trigger.zip"
   source = data.archive_file.db_trigger_lambda_function_distribution.output_path
   etag   = filemd5(data.archive_file.db_trigger_lambda_function_distribution.output_path)
@@ -76,10 +76,11 @@ resource "aws_lambda_function" "db_trigger_lambda_function" {
 
   environment {
     variables = {
-      DB_HOST : var.db_host,
-      DB_NAME : var.db_name,
-      DB_USER : var.db_username,
-      DB_PASSWORD : var.db_password,
+      AWS_REGION  = var.region
+      DB_HOST     = var.db_host,
+      DB_NAME     = var.db_name,
+      DB_USER     = var.db_username,
+      DB_PASSWORD = var.db_password,
     }
   }
 

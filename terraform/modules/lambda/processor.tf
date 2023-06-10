@@ -68,7 +68,7 @@ data "archive_file" "processor_lambda_function_distribution" {
 }
 
 resource "aws_s3_object" "processor_lambda_function_distribution_bucket_object" {
-  bucket = "${var.account_number}-${var.distribution_bucket}"
+  bucket = var.distribution_bucket
   key    = "lambdas/${var.product}-processor/${var.product}-processor.zip"
   source = data.archive_file.processor_lambda_function_distribution.output_path
   etag   = filemd5(data.archive_file.processor_lambda_function_distribution.output_path)
@@ -88,10 +88,11 @@ resource "aws_lambda_function" "processor_lambda_function" {
   environment {
     variables = {
       ATTENDEES_TABLE_NAME = var.attendees_table_name
-      DB_HOST : var.db_host,
-      DB_NAME : var.db_name,
-      DB_USER : var.db_username,
-      DB_PASSWORD : var.db_password,
+      AWS_REGION           = var.region
+      DB_HOST              = var.db_host,
+      DB_NAME              = var.db_name,
+      DB_USER              = var.db_username,
+      DB_PASSWORD          = var.db_password,
     }
   }
 

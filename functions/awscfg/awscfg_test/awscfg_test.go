@@ -9,10 +9,10 @@ import (
 
 func TestShouldReturnDifferentConfigurationWhenDynamoDbEndpointIsOverridden(t *testing.T) {
 	// Given
-	defaultConfig := awscfg.GetAwsConfig("", "")
+	defaultConfig := awscfg.GetAwsConfig("", "", "")
 
 	// When
-	configWithEndpointOverride := awscfg.GetAwsConfig("", "some-overridden-dynamodb-endpoint")
+	configWithEndpointOverride := awscfg.GetAwsConfig("", "some-overridden-dynamodb-endpoint", "us-east-1")
 
 	// Then
 	assert.NotEqual(t, defaultConfig, configWithEndpointOverride)
@@ -21,7 +21,7 @@ func TestShouldReturnDifferentConfigurationWhenDynamoDbEndpointIsOverridden(t *t
 func TestShouldReturnDefaultConfigurationWhenDynamoDbEndpointIsNotOverridden(t *testing.T) {
 	// Given
 	// When
-	configWithEndpointOverride := awscfg.GetAwsConfig("", "")
+	configWithEndpointOverride := awscfg.GetAwsConfig("", "", "us-east-1")
 
 	// Then
 	assert.NotNil(t, configWithEndpointOverride)

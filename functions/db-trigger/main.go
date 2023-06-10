@@ -14,7 +14,7 @@ func main() {
 	dbConx := getDatabaseConnexion()
 	defer dbConx.Close()
 
-	awsConfig := awscfg.GetAwsConfig(sqs.ServiceID, os.Getenv("SQS_ENDPOINT_OVERRIDE"))
+	awsConfig := awscfg.GetAwsConfig(sqs.ServiceID, os.Getenv("SQS_ENDPOINT_OVERRIDE"), os.Getenv("AWS_REGION"))
 
 	lambdaHandler := handler{
 		dbConx:     dbConx,

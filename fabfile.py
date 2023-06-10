@@ -8,8 +8,7 @@ from invoke import task, run as local
 
 
 @task
-def terraform(context, account_number="", contact="", distribution_bucket="terraform-deployments",
-              project_name="clams", region="", environment="nonprod", lambdas="yes",
+def terraform(context, account_number="", contact="", product="clams", region="", environment="nonprod", lambdas="yes",
               frontend="yes", flywayonly="no", database="yes", mode="plan"):
     if mode not in ['init', 'plan', 'apply', 'destroy']:
         print("No action to take.  Try passing --mode init|plan|apply|destroy")
@@ -22,16 +21,16 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
     if mode == 'apply' and lambdas == 'yes':
         build_lambdas()
 
-    bucket = '{account_number}-{distribution_bucket}' \
-        .format(account_number=account_number, distribution_bucket=distribution_bucket)
+    bucket = '{account_number}-{region}-terraform-deployments' \
+        .format(account_number=account_number, region=region)
 
-    key = 'tfstate/{region}/{environment}-{project_name}.json' \
-        .format(region=region, environment=environment, project_name=project_name)
+    key = 'tfstate/{environment}/{product}.json' \
+        .format(environment=environment, product=product)
 
     print("Remote state is {bucket}/{key}".format(bucket=bucket, key=key))
 
     if mode == 'init':
-        terraform_init(bucket, key, 'us-east-1')
+        terraform_init(bucket, key, region)
         exit(0)
 
     command = 'terraform {mode} -input=false ' \
@@ -39,10 +38,10 @@ def terraform(context, account_number="", contact="", distribution_bucket="terra
               '-var "contact={contact}" -var "distribution_bucket={distribution_bucket}" ' \
               '-var "account_number={account_number}" -var "environment={environment}" --refresh=true' \
         .format(mode=mode,
-                project_name=project_name,
+                project_name=product,
                 region=region,
                 contact=contact,
-                distribution_bucket=distribution_bucket,
+                distribution_bucket=bucket,
                 account_number=account_number,
                 environment=environment)
 
@@ -90,9 +89,10 @@ def build_lambdas():
 def terraform_init(bucket, key, region):
     remove_local_terraform_state_files_to_prevent_deploying_in_wrong_environment()
     with do_in_directory('terraform'):
-        local('terraform init -backend-config="bucket={bucket}" -backend-config="key={key}" ' \
-              '-backend-config="region={region}"'
-              .format(bucket=bucket, key=key, region=region))
+        command = 'terraform init -backend-config="bucket={bucket}" -backend-config="key={key}" ' \
+                         '-backend-config="region={region}"'.format(bucket=bucket, key=key, region=region)
+        print("Executing: ", command)
+        local(command)
 
 
 def remove_local_terraform_state_files_to_prevent_deploying_in_wrong_environment():

@@ -7,10 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 )
 
-const (
-	awsRegion = "us-east-1"
-)
-
 var loadDefaultConfig = config.LoadDefaultConfig
 
 func awsConfigForBespokeServiceEndpoint(awsRegion string, awsService string, endpoint string) (*aws.Config, error) {
@@ -28,13 +24,13 @@ func awsConfigForBespokeServiceEndpoint(awsRegion string, awsService string, end
 	return &cfg, nil
 }
 
-func GetAwsConfig(id string, endpoint string) *aws.Config {
+func GetAwsConfig(id string, endpoint string, region string) *aws.Config {
 	var awsConfig *aws.Config
 	if len(endpoint) == 0 {
-		cfg, _ := config.LoadDefaultConfig(context.Background(), config.WithRegion(awsRegion))
+		cfg, _ := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 		awsConfig = &cfg
 	} else {
-		awsConfig, _ = awsConfigForBespokeServiceEndpoint(awsRegion, id, endpoint)
+		awsConfig, _ = awsConfigForBespokeServiceEndpoint(region, id, endpoint)
 	}
 	return awsConfig
 }

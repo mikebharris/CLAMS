@@ -53,8 +53,8 @@ func mustDecodeBase64ToString(base64Encoded string) string {
 }
 
 func newSsmClient() *ssm.Client {
-	awscfg.GetAwsConfig(ssm.ServiceID, os.Getenv("SSM_ENDPOINT_OVERRIDE"))
-	return ssm.NewFromConfig(*awscfg.GetAwsConfig(ssm.ServiceID, os.Getenv("SSM_ENDPOINT_OVERRIDE")))
+	awscfg.GetAwsConfig(ssm.ServiceID, os.Getenv("SSM_ENDPOINT_OVERRIDE"), os.Getenv("AWS_REGION"))
+	return ssm.NewFromConfig(*awscfg.GetAwsConfig(ssm.ServiceID, os.Getenv("SSM_ENDPOINT_OVERRIDE"), os.Getenv("AWS_REGION")))
 }
 
 func getParameterValue(ssmClient *ssm.Client, parameterName string) string {

@@ -58,7 +58,7 @@ data "archive_file" "attendees_api_lambda_function_distribution" {
 }
 
 resource "aws_s3_object" "attendees_api_lambda_function_distribution_bucket_object" {
-  bucket = "${var.account_number}-${var.distribution_bucket}"
+  bucket = var.distribution_bucket
   key    = "lambdas/${var.product}-attendees-api/${var.product}-attendees-api.zip"
   source = data.archive_file.attendees_api_lambda_function_distribution.output_path
   etag   = filemd5(data.archive_file.attendees_api_lambda_function_distribution.output_path)
@@ -78,6 +78,7 @@ resource "aws_lambda_function" "attendees_api_lambda_function" {
   environment {
     variables = {
       ATTENDEES_TABLE_NAME = var.attendees_table_name
+      AWS_REGION           = var.region
     }
   }
 

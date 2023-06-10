@@ -17,7 +17,7 @@ To build the uploader:
 To test it use the _example-data.csv_ file.  Note you'll need to provide AWS credentials sufficient to write to SQS:
 
 ```shell
-% ./uploader -csv example-data.csv -sqs clams-nonprod-attendee-input-queue
+% ./uploader -csv example-data.csv -sqs clams-nonprod-attendee-input-queue -region=eu-west-2
 Reading from example-data.csv and writing to clams-nonprod-attendee-input-queue
 Queued message # 1  :  {123456 Cyder Punk anicedrop@riseup.net 29 0 04000000 01234 567 890 Fri 0 0 Milk allergy - but that's not a problem with vegan food :)}
 Queued message # 2  :  {612297 Rudy Jenkins rudy@jenkins.co 40 0 00000000 07811671893 Fri 0 1 None}

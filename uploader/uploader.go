@@ -31,6 +31,8 @@ type Message struct {
 var csvFile = flag.String("csv", "", "input csv file name")
 var sqsQueue = flag.String("sqs", "", "output sqs queue")
 
+var region = flag.String("region", "", "aws region")
+
 func main() {
 	flag.Parse()
 
@@ -50,7 +52,7 @@ func main() {
 		return
 	}
 
-	sqs, err := newSqsClient()
+	sqs, err := newSqsClient(*region)
 
 	fmt.Println("Reading from", *csvFile, "and writing to", *sqsQueue)
 	for row, record := range records {
@@ -89,8 +91,8 @@ type SqsClient struct {
 	sqsHandle *sqs.Client
 }
 
-func newSqsClient() (SqsClient, error) {
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion("us-east-1"))
+func newSqsClient(region string) (SqsClient, error) {
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	if err != nil {
 		panic(err)
 	}
