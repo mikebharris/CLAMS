@@ -123,7 +123,18 @@ make test
 
 # Deploying
 
-There is a Python Fabric 2 script to help you do this.  First authenticate with AWS, either using a SSO integration tool such as XXXX, or by fetching your credentials from IAM.
+There is a Python Fabric v2 script to help you do this.  First authenticate with AWS, either using a SSO integration tool such as XXXX, or by fetching your credentials from IAM.
+
+## Prerequisites
+
+The RDS database for CLAM requires two SSM parameters to be set up in the AWS Parameter Store.  Create these as /clams/{environment}/db/username and /clams/{environment}/db/password replacing {environment} with your target environment, for example:
+
+* /clams/nonprod/db/username
+* /clams/nonprod/db/password
+
+Both should ideally be of type SecureString, though it doesn't matter to the deployment scripts.
+
+The Route53 record requires an SSL certificate to be created using Amazon Certificate Manager (ACM).  
 
 First time you'll need to run the _init_ process (for example):
 
