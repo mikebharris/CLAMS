@@ -58,10 +58,10 @@ func Test_shouldReturnAllAttendeesWhenNoAuthCodeProvided(t *testing.T) {
 
 	ctx := context.Background()
 	mockRegister.On("GetAttendees", "").Return(attendees, nil)
-	handler := handler.Handler{AttendeesStore: &mockRegister}
+	h := handler.Handler{AttendeesStore: &mockRegister}
 
 	// When
-	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
+	response, err := h.HandleRequest(ctx, events.APIGatewayProxyRequest{})
 
 	// Then
 	headers := map[string]string{"Content-Type": "application/json"}
@@ -95,10 +95,10 @@ func Test_shouldReturnSingleAttendeesWhenAuthCodeProvided(t *testing.T) {
 
 	ctx := context.Background()
 	mockRegister.On("GetAttendees", "12345").Return(attendees, nil)
-	handler := handler.Handler{AttendeesStore: &mockRegister}
+	h := handler.Handler{AttendeesStore: &mockRegister}
 
 	// When
-	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{PathParameters: map[string]string{"authCode": "12345"}})
+	response, err := h.HandleRequest(ctx, events.APIGatewayProxyRequest{PathParameters: map[string]string{"authCode": "12345"}})
 
 	// Then
 	headers := map[string]string{"Content-Type": "application/json"}
@@ -115,10 +115,10 @@ func Test_shouldReturnNoContentWhenThereAreNoAttendees(t *testing.T) {
 	mockRegister := MockRegister{}
 	ctx := context.Background()
 	mockRegister.On("GetAttendees", "").Return([]attendee.Attendee{}, nil)
-	handler := handler.Handler{AttendeesStore: &mockRegister}
+	h := handler.Handler{AttendeesStore: &mockRegister}
 
 	// When
-	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
+	response, err := h.HandleRequest(ctx, events.APIGatewayProxyRequest{})
 
 	// Then
 	assert.Nil(t, err)
@@ -130,10 +130,10 @@ func Test_shouldReturnErrorWhenUnableToFetchAttendees(t *testing.T) {
 	mockAttendeesDatastore := MockRegister{}
 	ctx := context.Background()
 	mockAttendeesDatastore.On("GetAttendees", "").Return([]attendee.Attendee{}, fmt.Errorf("some error"))
-	handler := handler.Handler{AttendeesStore: &mockAttendeesDatastore}
+	h := handler.Handler{AttendeesStore: &mockAttendeesDatastore}
 
 	// When
-	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{})
+	response, err := h.HandleRequest(ctx, events.APIGatewayProxyRequest{})
 
 	// Then
 	assert.Equal(t, fmt.Errorf("some error"), err)
@@ -150,10 +150,10 @@ func Test_shouldReturnReportWhenAttendeesExistInDatastore(t *testing.T) {
 
 	mockAttendeesDatastore := MockRegister{}
 	mockAttendeesDatastore.On("GetAttendees", "").Return(someAttendees(), nil)
-	handler := handler.Handler{AttendeesStore: &mockAttendeesDatastore}
+	h := handler.Handler{AttendeesStore: &mockAttendeesDatastore}
 
 	// When
-	response, err := handler.HandleRequest(ctx, events.APIGatewayProxyRequest{Path: "/report"})
+	response, err := h.HandleRequest(ctx, events.APIGatewayProxyRequest{Path: "/report"})
 
 	// Then
 	assert.Nil(t, err)
