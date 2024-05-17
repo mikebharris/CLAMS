@@ -10,8 +10,7 @@ target:
 
 .PHONY: int-test
 int-test: build
-	cp ./main ./service-tests/
-	cd service-tests && go test
+	cd integration-tests && go test
 
 .PHONY: unit-test
 unit-test:
