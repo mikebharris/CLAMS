@@ -19,6 +19,12 @@ import (
 	"time"
 )
 
+const (
+	dynamoDbHostname   = "dynamodb"
+	dynamoDbPort       = 8000
+	attendeesTableName = "attendees"
+)
+
 func TestFeatures(t *testing.T) {
 	var steps steps
 	steps.t = t
@@ -54,12 +60,6 @@ type steps struct {
 	lambdaContainer     testcontainernetwork.LambdaDockerContainer
 	dynamoDbContainer   testcontainernetwork.DynamoDbDockerContainer
 }
-
-const (
-	dynamoDbHostname   = "dynamodb"
-	dynamoDbPort       = 8000
-	attendeesTableName = "attendees"
-)
 
 func (s *steps) startContainerNetwork() {
 	s.dynamoDbContainer = testcontainernetwork.DynamoDbDockerContainer{
@@ -124,22 +124,8 @@ func (s *steps) stopContainerNetwork() {
 	}
 }
 
-type Message struct {
-	AuthCode     string
-	Name         string
-	Email        string
-	AmountToPay  int
-	AmountPaid   int
-	DatePaid     string
-	Telephone    string
-	ArrivalDay   string
-	StayingLate  string
-	NumberOfKids int
-	Diet         string
-}
-
 func (s *steps) theAttendeeWriterIsInvokedWithANewAttendeeRecord() {
-	request := Message{
+	s.theLambdaIsInvoked(Payload{
 		Name:         "Frank Ostrowski",
 		Email:        "frank.o@gfa.de",
 		AuthCode:     "123456",
@@ -151,13 +137,11 @@ func (s *steps) theAttendeeWriterIsInvokedWithANewAttendeeRecord() {
 		Diet:         "I eat BASIC code for lunch",
 		StayingLate:  "Yes",
 		NumberOfKids: 1,
-	}
-
-	s.theLambdaIsInvoked(request)
+	})
 }
 
 func (s *steps) theAttendeeWriterIsInvokedWithAnUpdatedAttendeeRecord() {
-	request := Message{
+	s.theLambdaIsInvoked(Payload{
 		Name:         "Frank Ostrowski",
 		Email:        "frank.o@gfa.de",
 		AuthCode:     "123456",
@@ -169,11 +153,10 @@ func (s *steps) theAttendeeWriterIsInvokedWithAnUpdatedAttendeeRecord() {
 		Diet:         "I eat BASIC code for lunch",
 		StayingLate:  "No",
 		NumberOfKids: 1,
-	}
-	s.theLambdaIsInvoked(request)
+	})
 }
 
-func (s *steps) theLambdaIsInvoked(payload Message) {
+func (s *steps) theLambdaIsInvoked(payload Payload) {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		panic(err)
@@ -198,27 +181,6 @@ func (s *steps) theLambdaIsInvoked(payload Message) {
 		body := buf.String()
 		log.Fatalf("invoking Lambda: %d %s", response.StatusCode, body)
 	}
-}
-
-type Attendee struct {
-	AuthCode       string
-	Name           string
-	Email          string
-	Telephone      string
-	NumberOfKids   int
-	Diet           string
-	Financials     Financials
-	ArrivalDay     string
-	NumberOfNights int
-	StayingLate    string
-	CreatedTime    time.Time
-}
-
-type Financials struct {
-	AmountToPay int    `json:"AmountToPay"`
-	AmountPaid  int    `json:"AmountPaid"`
-	AmountDue   int    `json:"AmountDue"`
-	DatePaid    string `json:"DatePaid"`
 }
 
 func (s *steps) theAttendeeIsAddedToTheAttendeesDatastore() error {

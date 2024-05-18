@@ -1,25 +1,25 @@
-module service-test
+module integration_tests
 
 go 1.22.2
 
 require (
 	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go-v2 v1.26.2
-	github.com/aws/aws-sdk-go-v2/config v1.27.11
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.13.16
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.32.2
 	github.com/cucumber/godog v0.14.1
-	github.com/docker/go-connections v0.5.0
+	github.com/mikebharris/testcontainernetwork-go v0.3.2
 	github.com/stretchr/testify v1.9.0
-	github.com/testcontainers/testcontainers-go v0.30.0
 )
 
 require (
+	github.com/aws/aws-sdk-go-v2/config v1.27.11 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.31.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.23.4 // indirect
 	github.com/cucumber/gherkin/go/v26 v26.2.0 // indirect
 	github.com/cucumber/messages/go/v21 v21.0.1 // indirect
-	github.com/mikebharris/testcontainernetwork-go v0.3.2 // indirect
+	github.com/docker/go-connections v0.5.0 // indirect
+	github.com/testcontainers/testcontainers-go v0.30.0 // indirect
 )
 
 require (
