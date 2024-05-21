@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.26.2
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.32.2
 	github.com/cucumber/godog v0.14.1
-	github.com/mikebharris/testcontainernetwork-go v0.3.3
+	github.com/mikebharris/testcontainernetwork-go v0.3.4
 	github.com/stretchr/testify v1.9.0
 )
 
