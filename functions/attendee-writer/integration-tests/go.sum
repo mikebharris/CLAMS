@@ -133,6 +133,8 @@ github.com/magiconair/properties v1.8.7 h1:IeQXZAiQcpL9mgcAe1Nu6cX9LLw6ExEHKjN0V
 github.com/magiconair/properties v1.8.7/go.mod h1:Dhd985XPs7jluiymwWYZ0G4Z61jb3vdS329zhj2hYo0=
 github.com/mikebharris/testcontainernetwork-go v0.3.2 h1:jUMJGn3ueM5QjZ5/1PFpyVkhDRJ6lUCuMCYEbl9l+18=
 github.com/mikebharris/testcontainernetwork-go v0.3.2/go.mod h1:GwBiMOG9lULsju+SqqB4R1c7+0e6wh4OVuaId2f0G+c=
+github.com/mikebharris/testcontainernetwork-go v0.3.4 h1:mZi9/51bxNA6htr3X4rqXUM1vAHJVC3O0aU7lpk99I8=
+github.com/mikebharris/testcontainernetwork-go v0.3.4/go.mod h1:VOfOM/qKPmrgH5cHMGKIJFLJiQwg7oMaCk9oPEJ0duU=
 github.com/moby/docker-image-spec v1.3.1 h1:jMKff3w6PgbfSa69GfNg+zN/XLhfXJGnEx3Nl2EsFP0=
 github.com/moby/docker-image-spec v1.3.1/go.mod h1:eKmb5VW8vQEh/BAr2yvVNvuiJuY6UIocYsFu/DxxRpo=
 github.com/moby/patternmatcher v0.6.0 h1:GmP9lR19aU5GqSSFko+5pRqHi+Ohk1O69aFiKkVGiPk=

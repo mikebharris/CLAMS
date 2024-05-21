@@ -108,7 +108,7 @@ func (s *steps) initialiseDynamoDb() {
 		TableName: aws.String(attendeesTableName),
 	}
 
-	dynamoDbClient, err := clients.DynamoDbClient{}.New(s.dynamoDbContainer.MappedPort())
+	dynamoDbClient, err := clients.DynamoDbClient{}.New("localhost", s.dynamoDbContainer.MappedPort())
 	if err != nil {
 		log.Fatalf("creating DynamoDB client: %v", err)
 	}
@@ -224,7 +224,7 @@ func (s *steps) theAttendeeIsUpdatedInTheAttendeesDatastore() error {
 }
 
 func (s *steps) getAttendeeByCode(authCode string) *Attendee {
-	dynamoDbClient, err := clients.DynamoDbClient{}.New(s.dynamoDbContainer.MappedPort())
+	dynamoDbClient, err := clients.DynamoDbClient{}.New("localhost", s.dynamoDbContainer.MappedPort())
 	if err != nil {
 		log.Fatalf("creating DynamoDB client: %v", err)
 	}
