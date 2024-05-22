@@ -1,9 +1,10 @@
-package service_tests
+package integration_tests
 
 import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"log"
 	"math/rand"
 )
 
@@ -13,25 +14,23 @@ const attendeeRoleId = 2
 type AuroraClient struct {
 	host   string
 	port   int
-	dbconx *sql.DB
+	dbConx *sql.DB
 }
 
 func (a *AuroraClient) connectToDatabase() *sql.DB {
-	psqlconn := fmt.Sprintf(
+	dbConx, err := sql.Open("postgres", fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s search_path=%s sslmode=disable",
 		a.host, a.port, "hacktivista", "d0ntHackM3", "hacktionlab", "hacktionlab_workshops",
-	)
-
-	dbconx, err := sql.Open("postgres", psqlconn)
+	))
 	if err != nil {
-		panic(err)
+		log.Fatalf("connecting to database: %v", err)
 	}
 
-	return dbconx
+	return dbConx
 }
 
 func (a *AuroraClient) closeDatabaseConnexion() error {
-	err := a.dbconx.Close()
+	err := a.dbConx.Close()
 	return err
 }
 
@@ -41,9 +40,9 @@ func (a *AuroraClient) createWorkshopSignup(workshopId, personId, roleId int) in
 			insert into workshop_signups(id, people_id, workshop_id, role_id, signed_up_on)
 			values($1, $2, $3, $4, now())
 	`
-	_, err := a.dbconx.Exec(statement, id, personId, workshopId, roleId)
+	_, err := a.dbConx.Exec(statement, id, personId, workshopId, roleId)
 	if err != nil {
-		panic(err)
+		log.Fatalf("creating workshop signup: %v", err)
 	}
 	return id
 }
@@ -53,9 +52,9 @@ func (a *AuroraClient) createRoles() {
 			insert into roles(id, role_name)
 			values($1, 'facilitator'),($2, 'attendee')
 	`
-	_, err := a.dbconx.Exec(statement, facilitatorRoleId, attendeeRoleId)
+	_, err := a.dbConx.Exec(statement, facilitatorRoleId, attendeeRoleId)
 	if err != nil {
-		panic(err)
+		log.Fatalf("creating roles: %v", err)
 	}
 }
 
@@ -66,9 +65,9 @@ func (a *AuroraClient) createPerson(forename, surname, email string) int {
 		insert into people(id, forename, surname, email)
 		values($1, $2, $3, $4)
 	`
-	_, err := a.dbconx.Exec(statement, id, forename, surname, email)
+	_, err := a.dbConx.Exec(statement, id, forename, surname, email)
 	if err != nil {
-		panic(err)
+		log.Fatalf("creating person: %v", err)
 	}
 	return id
 }
@@ -79,9 +78,9 @@ func (a *AuroraClient) createWorkshop(title string) int {
 		insert into workshops(id, title)
 		values($1, $2)
 	`
-	_, err := a.dbconx.Exec(statement, id, title)
+	_, err := a.dbConx.Exec(statement, id, title)
 	if err != nil {
-		panic(err)
+		log.Fatalf("creating workshop: %v", err)
 	}
 	return id
 }

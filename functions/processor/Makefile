@@ -11,8 +11,7 @@ target:
 .PHONY: int-test
 int-test: build
 	docker network prune --filter 'label!=keep' --force
-	cp ./main ./service-tests/
-	cd service-tests && go test
+	cd integration-tests && go test
 
 .PHONY: unit-test
 unit-test:
