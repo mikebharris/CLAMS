@@ -52,8 +52,8 @@ resource "aws_iam_policy" "attendees_api_iam_policy" {
 }
 
 data "archive_file" "attendees_api_lambda_function_distribution" {
-  source_file = "../functions/attendees-api/main"
-  output_path = "../functions/attendees-api/${var.product}-attendees-api.zip"
+  source_file = "../lambdas/attendees-api/main"
+  output_path = "../lambdas/attendees-api/${var.product}-attendees-api.zip"
   type        = "zip"
 }
 

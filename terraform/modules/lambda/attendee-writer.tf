@@ -17,8 +17,8 @@ resource "aws_iam_role" "attendee_writer_iam_role" {
 }
 
 data "archive_file" "attendee_writer_lambda_function_distribution" {
-  source_file  = "../functions/attendee-writer/main"
-  output_path = "../functions/attendee-writer/${var.product}-attendee-writer.zip"
+  source_file  = "../lambdas/attendee-writer/main"
+  output_path = "../lambdas/attendee-writer/${var.product}-attendee-writer.zip"
   type        = "zip"
 }
 

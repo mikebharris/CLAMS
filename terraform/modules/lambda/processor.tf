@@ -62,8 +62,8 @@ resource "aws_iam_policy" "processor_iam_policy" {
 }
 
 data "archive_file" "processor_lambda_function_distribution" {
-  source_file = "../functions/processor/main"
-  output_path = "../functions/processor/${var.product}-processor.zip"
+  source_file = "../lambdas/processor/main"
+  output_path = "../lambdas/processor/${var.product}-processor.zip"
   type        = "zip"
 }
 

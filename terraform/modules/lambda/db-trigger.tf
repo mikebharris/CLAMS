@@ -51,8 +51,8 @@ resource "aws_iam_policy" "db_trigger_iam_policy" {
 }
 
 data "archive_file" "db_trigger_lambda_function_distribution" {
-  source_file = "../functions/db-trigger/main"
-  output_path = "../functions/db-trigger/${var.product}-db-trigger.zip"
+  source_file = "../lambdas/db-trigger/main"
+  output_path = "../lambdas/db-trigger/${var.product}-db-trigger.zip"
   type        = "zip"
 }
 
