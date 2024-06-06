@@ -99,14 +99,37 @@ The Terraform configuration files are in the [](terraform) directory, the fronte
 
 The Database is deployed using Flyway (both to AWS and into a Docker instance for the Service Tests).  The command that is run can be found in [](fabfile.py) and the SQL migration (scheme version) files in [](flyway/sql)
 
-# Running Tests
+# Building
 
-There are service/integration-level tests that use Gherkin syntax to test integration between the Lambda and other dependent AWS servies.  The tests make use of Docker containers to emulate the various services locally, and therefore you need Docker Desktop running.
-
-To run the service tests, change to the service in the _functions_ directory and type:
+To build the Lambdas, change to the service in the _lambdas_ directory and type:
 
 ```shell
-AWS_SECRET_ACCESS_KEY=x AWS_ACCESS_KEY_ID=y make int-test
+make build
+```
+
+To build the Lambda for the target AWS environment, which may have a different processor architecture from your local development, type:
+
+```shell
+make target
+```
+
+This is normally because, for example, you are developing on an Intel Mac but deploying to an ARM64 AWS Lambda environment.
+
+# Running Tests
+
+There are integration tests (aka service tests) that use Gherkin syntax to test integration between the Lambda and other dependent AWS services.  The tests make use of Docker containers to emulate the various services locally, and therefore you need Docker running.
+
+To run the integration tests, change to the service in the _lambdas_ directory and type:
+
+```shell
+make int-test
+```
+
+Alternatively, you can change to the integration-tests directory and type:
+
+```shell
+cd lambdas/processor/integration-tests
+go test
 ```
 
 There are unit tests than can be run, again by changing to the service in the _functions_ directory and typing:
@@ -115,15 +138,40 @@ There are unit tests than can be run, again by changing to the service in the _f
 make unit-test
 ```
 
-You can run both unit and integration/service tests for a given service with:
+You can run both unit and integration tests for a given service with:
 
 ```shell
 make test
 ```
 
 # Deploying
+There is a [Go program](pipeline.go) that _helps_ you to build and test the Lambdas and run Terraform commands included in the repository. This
+program takes the following parameters:
 
-There is a Python Fabric v2 script to help you do this.  First authenticate with AWS, either using a SSO integration tool such as XXXX, or by fetching your credentials from IAM.
+```shell
+go run pipeline.go --help
+Usage of pipeline:
+  -account-number uint
+    	Account number of AWS deployment target
+  -confirm 
+    	For destructive operations this should be set to true rather than false
+  -environment string
+    	Target environment = prod, nonprod, etc (default "nonprod")
+  -lambdas string
+    	Which Lambda functions to test and/or build: <name-of-lambda> or all (default "all")
+  -stage string
+    	Deployment stage: unit-test, build, int-test, init, plan, apply, destroy
+```
+
+The _--stage_ parameter allows you to control each distinct stage of a pipeline deployment process, locally on your development machine, or in each stage of the pipeline:
+
+* unit-test - Run suite of unit tests for all Lambdas
+* build - Build all Lambdas for target environment
+* int-test - Run suite of integration tests for all Lambdas
+* init - Initialise Terraform
+* plan - Run Terraform plan
+* apply - Run Terraform apply
+* destroy - Run Terraform destroy
 
 ## Prerequisites
 
@@ -134,49 +182,93 @@ The RDS database for CLAM requires two SSM parameters to be set up in the AWS Pa
 
 Both should ideally be of type SecureString, though it doesn't matter to the deployment scripts.
 
-The Route53 record requires an SSL certificate to be created using Amazon Certificate Manager (ACM).  
+The Route53 record requires an SSL certificate to be created using Amazon Certificate Manager (ACM).
 
-First time you'll need to run the _init_ process (for example):
+### Running the Go pipeline deployment helper program
 
+Each deployment stage is now described in detail
+
+#### unit-test
+
+This runs all the unit tests for all the Lambdas:
 ```shell
-AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY fab terraform --account-number=111111111111 --contact=your@email.com --mode=init
+go run pipeline.go --stage=unit-test
 ```
 
-A _plan_ tests your Terraform config's syntax:
-
+Optionally you can unit test just a single Lambda by using the _--lambda__ flag on the command line:
 ```shell
-AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY fab terraform --account-number=111111111111 --contact=your@email.com --mode=plan
+go run pipeline.go --stage=unit-test --lambda=processor
 ```
 
-An _apply_ makes your changes so in your target AWS account:
+#### build
+
+This builds all the Lambdas:
 ```shell
-AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY fab terraform --account-number=111111111111 --contact=your@email.com --mode=apply
+go run pipeline.go --stage=build
 ```
 
-And finally _destroy_ takes it all down again:
+Optionally you can build just a single Lambda by using the _--lambda__ flag on the command line:
 ```shell
-AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY fab terraform --account-number=111111111111 --contact=your@email.com --mode=destroy
+go run pipeline.go --stage=build --lambda=processor
 ```
 
-The command line supports the following:
+#### int-test
+
+This runs all the integration tests for all the Lambdas:
+```shell
+go run pipeline.go --stage=int-test
+```
+
+Optionally you can run integration tests for just a single Lambda by using the _--lambda__ flag on the command line:
+```shell
+go run pipeline.go --stage=int-test --lambda=processor
+```
+
+#### init
+
+Run Terraform init:
+```shell
+AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY go run pipeline.go --stage=init --account-number=123456789012 --environment=nonprod 
+```
+
+#### plan
+
+Run Terraform plan:
+```shell
+AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY go run pipeline.go --stage=plan --account-number=123456789012 --environment=nonprod 
+```
+
+#### apply
+
+Run Terraform apply:
+```shell
+AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY go run pipeline.go --stage=apply --account-number=123456789012 --environment=nonprod --confirm=true
+```
+
+#### destroy
+
+Run Terraform destroy:
+```shell
+AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY go run pipeline.go --stage=destroy --account-number=123456789012 --environment=nonprod --confirm=true
+```
+
+
+### FAQ
+
+#### I get "Backend configuration changed" whilst initialising or another operation
+
+You get an error similar to the following:
 
 ```shell
-Usage: fab [--core-opts] terraform [--options] [other tasks here ...]
+$ go run pipeline.go --stage=init --account-number=123456789012 --environment=prod
+2024/01/16 16:30:06 error running Init: exit status 1
 
-Docstring:
-  none
-
-Options:
-  -a STRING, --account-number=STRING
-  -c STRING, --contact=STRING
-  -d STRING, --distribution-bucket=STRING
-  -e STRING, --environment=STRING
-  -i STRING, --input-queue=STRING
-  -m STRING, --mode=STRING
-  -p STRING, --project-name=STRING
-  -r STRING, --region=STRING
-  -t STRING, --attendees-table=STRING
+Error: Backend configuration changed
 ```
+
+This is normally due to switching between environments and caused by your local Terraform tfstate file being out-of-sync
+with the remote tfstate file in S3. You can resolve it by removing the directory `terraform/.terraform` and re-running
+the _init_ process.
 
 # TODO list
 
