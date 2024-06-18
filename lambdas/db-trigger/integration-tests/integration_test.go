@@ -62,9 +62,9 @@ func (s *steps) startContainerNetwork() {
 	wd, _ := os.Getwd()
 	s.sqsContainer = testcontainernetwork.SqsDockerContainer{
 		Config: testcontainernetwork.SqsDockerContainerConfig{
-			Hostname:       "sqsmock",
-			Port:           9324,
-			ConfigFilePath: path.Join(wd, "sqs/elasticmq.conf"),
+			Hostname:   "sqsmock",
+			Port:       9324,
+			ConfigFile: path.Join(wd, "sqs/elasticmq.conf"),
 		},
 	}
 
@@ -82,9 +82,9 @@ func (s *steps) startContainerNetwork() {
 
 	s.flywayContainer = testcontainernetwork.FlywayDockerContainer{
 		Config: testcontainernetwork.FlywayDockerContainerConfig{
-			Hostname:       "flyway",
-			ConfigFilePath: path.Join(wd, "flyway/conf"),
-			SqlFilePath:    path.Join(wd, "../../../flyway/sql"),
+			Hostname:        "flyway",
+			ConfigFilesPath: path.Join(wd, "flyway/conf"),
+			SqlFilesPath:    path.Join(wd, "../../../flyway/sql"),
 		},
 	}
 

@@ -94,9 +94,9 @@ func (s *steps) startContainerNetwork() {
 
 	s.flywayContainer = testcontainernetwork.FlywayDockerContainer{
 		Config: testcontainernetwork.FlywayDockerContainerConfig{
-			Hostname:       "flyway",
-			ConfigFilePath: path.Join(wd, "flyway/conf"),
-			SqlFilePath:    path.Join(wd, "../../../flyway/sql"),
+			Hostname:        "flyway",
+			ConfigFilesPath: path.Join(wd, "flyway/conf"),
+			SqlFilesPath:    path.Join(wd, "../../../flyway/sql"),
 		},
 	}
 
