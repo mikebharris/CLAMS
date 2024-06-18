@@ -2,7 +2,7 @@ export SHELL:=/bin/bash
 
 .PHONY: build
 build:
-	GOOS=linux go build -o main .
+	GOOS=linux CGO_ENABLED=0 go build -o main .
 
 .PHONY: target
 target:
