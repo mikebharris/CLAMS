@@ -91,7 +91,7 @@ func (s *steps) startContainerNetwork() {
 		testcontainernetwork.NetworkOfDockerContainers{}.
 			WithDockerContainer(&s.lambdaContainer).
 			WithDockerContainer(&s.dynamoDbContainer)
-	_ = s.networkOfContainers.StartWithDelay(2 * time.Second)
+	_ = s.networkOfContainers.StartWithDelay(5 * time.Second)
 }
 
 func (s *steps) initialiseDynamoDb() {
