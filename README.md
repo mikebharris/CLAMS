@@ -1,8 +1,8 @@
-# CLAMS
+# CLAMS - The Cloud-based Lightweight Attendee Management System
 
-_CLAMS => "BAMS in the Cloud"_
+_CLAMS ~= "BAMS in the Cloud"_
 
-A personal learning project using a connection to a [legacy event management system written in COBOL (BAMS)](https://github.com/mikebharris/BAMS) as a way of illustrating serverless architectures using [Go](https://go.dev/), [Python](https://www.python.org/), [Fabric](https://www.fabfile.org/), [Svelte](https://svelte.dev/) and [Terraform](https://www.terraform.io/).  CLAMS so far employs the following AWS services:
+A personal learning project using a connection to a [legacy event management system written in COBOL (BAMS)](https://github.com/mikebharris/BAMS) as a way of illustrating serverless architectures using [Go](https://go.dev/), [Svelte](https://svelte.dev/) and [Terraform](https://www.terraform.io/).  CLAMS so far employs the following AWS services:
 
 * API Gateway
 * DynamoDB
@@ -14,19 +14,19 @@ A personal learning project using a connection to a [legacy event management sys
 * CloudWatch
 * RDS
 
-## More
+## More details
 
-This is primarily a project for me to learn Go to establish and understand patterns for writing service and unit tests.  It was used as the basis for a workshop that I first did in Todmorden in June 2022 for [HacktionLab](https://hacktionlab.org).
+This is primarily a project for me to learn Go to establish and understand patterns for writing service and unit tests.  It was used as the basis for a workshop on AWS and its services that I first did in Todmorden in June 2022 for [HacktionLab](https://hacktionlab.org).
 
 In the project I also attempt to use best practices around:
 
-* Test driven development using the stubs, spies and mocks library for unit tests, with extensive reworking to make the tests more refactor proof and test behaviour and not implementation, thanks to input from Hoegrammer.
-* Behavioural driven development tests using Godog with acceptance-test feature files written in Gherkin
-* Clean code - naming of methods, variables, tests, packages, etc.
-* SOLID (where possible given that Go is a little unusual as an OO language preferring, as it does, composition over inheritance)
-* Design patterns
-* Moduliarisation of Go code using packages
-* Infrastructure as code and devops approaches using Fabric and Terraform
+* __Test driven development__ using the stubs, spies and mocks library for unit tests, with extensive reworking to make the tests more refactor proof and test behaviour and not implementation, thanks to input from Hoegrammer.
+* __Behavioural driven development__ tests using Godog with acceptance-test feature files written in Gherkin
+* __Clean code__ - naming of methods, variables, tests, packages, etc.
+* __SOLID__ (where possible given that Go is a little unusual as an OO language preferring, as it does, composition through _structural typing_ over inheritance)
+* __Design__ patterns
+* __Moduliarisation__ of Go code using packages
+* __Infrastructure__ as code and devops approaches using Fabric and Terraform
 
 ## Architecture
 
@@ -38,7 +38,7 @@ In the project I also attempt to use best practices around:
 
 ## Using CLAMS
 
-To use CLAMS, get the API Gateway endpoint via AWS Console; it's also displayed as the output of the deployment script (see below).  There is an [example Postman collection](CLAMS.postman_collection.json) that you can use.  The endpoints provided are:
+To use CLAMS, hit the API Gateway endpoint via AWS Console; it's also displayed as the output of the deployment script (see below).  There is an [example Postman collection](CLAMS.postman_collection.json) that you can use.  The endpoints provided are:
 
 * /clams/attendees - fetch a list of all attendees
 * /clams/attendee/5F7BCD - get a specific attendee's details (the code is for the example attendee defined in [](terraform/modules/dynamo/items.tf))
@@ -56,11 +56,11 @@ In the following test and deployment sections you'll need to create a pair of cr
 
 There are five AWS Lambda functions:
 
-* [Attendee Writer](functions/attendee-writer) - Writes new incoming attendees into the DynamoDB datastore
-* [Attendee API](functions/attendees-api) - Presents the attendee's details to the world and does some reporting in JSON
-* [Authorizer](functions/authorizer) - Provides HTTP Basic Auth access to certain endpoints (i.e. for PUT, POST, DELETE)
-* [DB-Trigger](functions/db-trigger) - Turns entries in the trigger_notifications table into streamed events
-* [Processor](functions/processor) - Process db notifications created by the DB-Trigger Lambda
+* [Attendee Writer](lambdas/attendee-writer) - Writes new incoming attendees into the DynamoDB datastore
+* [Attendee API](lambdas/attendees-api) - Presents the attendee's details to the world and does some reporting in JSON
+* [Authorizer](lambdas/authorizer) - Provides HTTP Basic Auth access to certain endpoints (i.e. for PUT, POST, DELETE)
+* [DB-Trigger](lambdas/db-trigger) - Turns entries in the trigger_notifications table into streamed events
+* [Processor](lambdas/processor) - Process db notifications created by the DB-Trigger Lambda
 
 ## Shared packages
 
@@ -118,6 +118,8 @@ This is normally because, for example, you are developing on an Intel Mac but de
 # Running Tests
 
 There are integration tests (aka service tests) that use Gherkin syntax to test integration between the Lambda and other dependent AWS services.  The tests make use of Docker containers to emulate the various services locally, and therefore you need Docker running.
+
+The integration tests use another GitHub project of mine, [Test Container Network for Go](https://github.com/mikebharris/testcontainernetwork-go), which wraps the creation and manipulation of a network of Docker containers for common services in a set of helper routines to reduce the quantity of boilerplate code whilst maintaining the ability to test-drive their development. 
 
 To run the integration tests, change to the service in the _lambdas_ directory and type:
 
