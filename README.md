@@ -155,12 +155,14 @@ go run pipeline.go --help
 Usage of pipeline:
   -account-number uint
     	Account number of AWS deployment target
-  -confirm 
+  -confirm
     	For destructive operations this should be set to true rather than false
   -environment string
     	Target environment = prod, nonprod, etc (default "nonprod")
-  -lambdas string
+  -lambda string
     	Which Lambda functions to test and/or build: <name-of-lambda> or all (default "all")
+  -region string
+    	The target AWS region for the deployment (default "us-east-1")
   -stage string
     	Deployment stage: unit-test, build, int-test, init, plan, apply, destroy
 ```
@@ -230,7 +232,7 @@ go run pipeline.go --stage=int-test --lambda=processor
 
 Run Terraform init:
 ```shell
-AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY go run pipeline.go --stage=init --account-number=123456789012 --environment=nonprod 
+AWS_ACCESS_KEY_ID=XXXX AWS_SECRET_ACCESS_KEY=YYYY go run pipeline.go --stage=init --account-number=123456789012 --environment=nonprod --region=eu-west-1
 ```
 
 #### plan

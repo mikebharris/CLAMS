@@ -17,6 +17,8 @@ import (
 
 var awsAccountNumber = flag.Uint("account-number", 0, "Account number of AWS deployment target")
 var environment = flag.String("environment", "nonprod", "Target environment = prod, nonprod, etc")
+var awsRegion = flag.String("region", "us-east-1", "The target AWS region for the deployment")
+
 var opConfirmed = flag.Bool("confirm", false, "For destructive operations this should be set to true rather than false")
 var lambdasToBuild = flag.String("lambda", "all", "Which Lambda functions to test and/or build: <name-of-lambda> or all")
 var stage = flag.String("stage", "", "Deployment stage: unit-test, build, int-test, init, plan, apply, destroy")
@@ -51,11 +53,11 @@ func main() {
 	case "apply":
 		fallthrough
 	case "destroy":
-		runTerraformCommandForRegion(*stage, "eu-west-1")
+		runTerraformCommandForRegion(*stage)
 	}
 }
 
-func runTerraformCommandForRegion(tfOp string, awsRegion string) {
+func runTerraformCommandForRegion(tfOp string) {
 	tf := setupTerraformExec(context.Background())
 
 	var stdout bytes.Buffer
@@ -67,22 +69,22 @@ func runTerraformCommandForRegion(tfOp string, awsRegion string) {
 	tfWorkingBucket := fmt.Sprintf("%d-%s-terraform-deployments", *awsAccountNumber, awsRegion)
 	switch tfOp {
 	case "init":
-		terraformInit(tf, tfWorkingBucket, awsRegion)
+		terraformInit(tf, tfWorkingBucket, *awsRegion)
 	case "plan":
-		terraformPlan(tf, tfWorkingBucket, *awsAccountNumber, *environment, false)
+		terraformPlan(tf, tfWorkingBucket, *awsAccountNumber, *awsRegion, *environment, false)
 	case "apply":
 		if *opConfirmed {
-			terraformApply(tf, tfWorkingBucket, *awsAccountNumber, *environment)
+			terraformApply(tf, tfWorkingBucket, *awsAccountNumber, *awsRegion, *environment)
 		} else {
 			log.Println("destructive apply not confirmed running plan instead...")
-			terraformPlan(tf, tfWorkingBucket, *awsAccountNumber, *environment, false)
+			terraformPlan(tf, tfWorkingBucket, *awsAccountNumber, *awsRegion, *environment, false)
 		}
 	case "destroy":
 		if *opConfirmed {
-			terraformDestroy(tf, tfWorkingBucket, *awsAccountNumber, *environment)
+			terraformDestroy(tf, tfWorkingBucket, *awsAccountNumber, *awsRegion, *environment)
 		} else {
 			log.Println("destructive destroy not confirmed running plan destroy instead...")
-			terraformPlan(tf, tfWorkingBucket, *awsAccountNumber, *environment, true)
+			terraformPlan(tf, tfWorkingBucket, *awsAccountNumber, *awsRegion, *environment, true)
 		}
 	case "skip":
 	default:
@@ -124,7 +126,7 @@ func terraformInit(tf *tfexec.Terraform, tfWorkingBucket string, awsRegion strin
 	}
 }
 
-func terraformPlan(tf *tfexec.Terraform, tfWorkingBucket string, awsAccountNumber uint, environment string, destroyFlag bool) {
+func terraformPlan(tf *tfexec.Terraform, tfWorkingBucket string, awsAccountNumber uint, awsRegion string, environment string, destroyFlag bool) {
 	if destroyFlag {
 		log.Println("planning Terraform destroy...")
 	} else {
@@ -133,8 +135,9 @@ func terraformPlan(tf *tfexec.Terraform, tfWorkingBucket string, awsAccountNumbe
 	_, err := tf.Plan(context.Background(),
 		tfexec.Refresh(true),
 		tfexec.Destroy(destroyFlag),
-		tfexec.Var(fmt.Sprintf("terraform_working_bucket=%s", tfWorkingBucket)),
+		tfexec.Var(fmt.Sprintf("distribution_bucket=%s", tfWorkingBucket)),
 		tfexec.Var(fmt.Sprintf("account_number=%d", awsAccountNumber)),
+		tfexec.Var(fmt.Sprintf("region=%s", awsRegion)),
 		tfexec.Var(fmt.Sprintf("environment=%s", environment)),
 		tfexec.VarFile(fmt.Sprintf("environments/%s.tfvars", environment)),
 	)
@@ -143,12 +146,13 @@ func terraformPlan(tf *tfexec.Terraform, tfWorkingBucket string, awsAccountNumbe
 	}
 }
 
-func terraformApply(tf *tfexec.Terraform, workingBucket string, awsAccountNumber uint, environment string) {
+func terraformApply(tf *tfexec.Terraform, workingBucket string, awsAccountNumber uint, awsRegion string, environment string) {
 	log.Println("applying Terraform...")
 	if err := tf.Apply(context.Background(),
 		tfexec.Refresh(true),
-		tfexec.Var(fmt.Sprintf("terraform_working_bucket=%s", workingBucket)),
+		tfexec.Var(fmt.Sprintf("distribution_bucket=%s", workingBucket)),
 		tfexec.Var(fmt.Sprintf("account_number=%d", awsAccountNumber)),
+		tfexec.Var(fmt.Sprintf("region=%s", awsRegion)),
 		tfexec.Var(fmt.Sprintf("environment=%s", environment)),
 		tfexec.VarFile(fmt.Sprintf("environments/%s.tfvars", environment)),
 	); err != nil {
@@ -157,12 +161,13 @@ func terraformApply(tf *tfexec.Terraform, workingBucket string, awsAccountNumber
 	displayTerraformOutputs(tf)
 }
 
-func terraformDestroy(tf *tfexec.Terraform, workingBucket string, awsAccountNumber uint, environment string) {
+func terraformDestroy(tf *tfexec.Terraform, workingBucket string, awsAccountNumber uint, awsRegion string, environment string) {
 	log.Println("destroying all the things...")
 	if err := tf.Destroy(context.Background(),
 		tfexec.Refresh(true),
-		tfexec.Var(fmt.Sprintf("terraform_working_bucket=%s", workingBucket)),
+		tfexec.Var(fmt.Sprintf("distribution_bucket=%s", workingBucket)),
 		tfexec.Var(fmt.Sprintf("account_number=%d", awsAccountNumber)),
+		tfexec.Var(fmt.Sprintf("region=%s", awsRegion)),
 		tfexec.Var(fmt.Sprintf("environment=%s", environment)),
 		tfexec.VarFile(fmt.Sprintf("environments/%s.tfvars", environment)),
 	); err != nil {

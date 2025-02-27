@@ -1,8 +1,12 @@
 variable environment {}
 variable region {}
 variable account_number {}
-variable contact {}
-variable product {}
+variable contact {
+  default = "https://hacktionlab.org"
+}
+variable product {
+  default = "CLAMS"
+}
 variable orchestration {
   default = "https://github.com/mikebharris/clams"
 }
