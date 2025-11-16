@@ -119,7 +119,7 @@ func terraformInit(tf *tfexec.Terraform, tfWorkingBucket string, awsRegion strin
 	log.Println("initialising Terraform...")
 	if err := tf.Init(context.Background(),
 		tfexec.Upgrade(true),
-		tfexec.BackendConfig(fmt.Sprintf("key=tfstate/%s/cmi-schedulers-dsr-automation.json", *environment)),
+		tfexec.BackendConfig(fmt.Sprintf("key=tfstate/%s/clams.json", *environment)),
 		tfexec.BackendConfig(fmt.Sprintf("bucket=%s", tfWorkingBucket)),
 		tfexec.BackendConfig(fmt.Sprintf("region=%s", awsRegion))); err != nil {
 		log.Fatalf("error running Init: %s", err)
